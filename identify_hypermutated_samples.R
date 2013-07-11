@@ -15,18 +15,23 @@ silentVsNonSilentRatio<- sapply(seq(1:length(uniqueSamples)), function(x) (snvIn
 #1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
 #2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
 indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
+#plotbycancerType
+snvIndelBarPlotPoints<-snvIndelBarPlotPoints[which(cancerType=="rectum"),]
+indelSNVratio<-indelSNVratio[which(cancerType=="rectum")]
+silentVsNonSilentRatio<-silentVsNonSilentRatio[which(cancerType=="rectum")]
 
 
 
+#plot
 par(mar=c(3,5,5,5))
-barplot(t(snvIndelBarPlotPoints), col=c("blue", "red"),border=c("blue","red"), beside=FALSE,axisnames=FALSE, main= "non-silent mutation frequency and the percentage \n of which that are indels")# red = silent mutations and blue=nonsilent mutations
+barplot(t(snvIndelBarPlotPoints), col=c("blue", "red"),border=c("blue","red"), beside=FALSE,axisnames=FALSE, main= "non-silent mutation frequency and Indel:SNV ratio")# red = silent mutations and blue=nonsilent mutations
 par(new=T)
 plot(indelSNVratio, axes=F, pch=20, cex=0.7,xlab="",ylab="") # a plot of the percentage of indels amongst all non-silent mutations
-axis(4, pretty(c(0, max(indelSNVratio))), pos= 360)
+axis(4, pretty(c(0, max(indelSNVratio))), pos= length(indelSNVratio)+2)
 mtext("mutation frequency per sample", side=2, line=0, adj=0.5, padj=-3.5)
 mtext("ratio of indels to SNV mutations",side=4,line=0, adj=0.5, padj=2.5)
 mtext("samples ordered by mutation frequency",side=1, adj=0.5,padj=2.0)
-legend(290,35, c("SNV","indel"), lty=c(1,1),lwd=c(2.5,2.5),col=c("blue","red"))
+legend(0.8*length(indelSNVratio),0.5, c("SNV","indel"), lty=c(1,1),lwd=c(2.5,2.5),col=c("blue","red"))
 length(which(silentVsNonSilentRatio>20))
 hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
 # colnames(mutM) and rownames(silentAndNonSilentMutations)
@@ -64,9 +69,10 @@ points(silentMutationsForPlot, col="blue", pch =20)
 t<- countMatch1(mutM)
 u<- compDiss(t,1,mutM)
 v<-cmdscale(u,k=2)
+par(mar=c(5,5,5,5))
 plot(v[,1],v[,2], pch = 19, col=sampleColors, cex=0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
 points(v[hyperIndex,1], v[hyperIndex,2],pch=1, cex = 1.5)
-legend(0.5, 0.08, c("colon", "rectum"), cex=1, pch=1,col=c("red","blue"))
+legend(0.5, 0.08, c("Illumina", "Solid","hypermutated"), cex=1, pch=c(19,19,1),col=c("red","blue","black"))
 
 
 plot(v[,1],v[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
@@ -82,9 +88,9 @@ points(e[hyperIndex,1], e[hyperIndex,2],pch=1, cex = 2)
 # c= the compDiss derived disimilarity matrix of samples
 e<-cmdscale(c,k=2)
 par(mar=c(5,5,5,5))
-plot(e[,1],e[,2], col=sampleColors, pch =19,cex=0.8, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n after network processing of mutation matrix")
+plot(e[,1],e[,2], col=sampleColors, pch =19,cex=0.8, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n after network processing of mutation matrix")
 points(e[hyperIndex,1], e[hyperIndex,2],pch=1, cex = 1.5)
-legend(0.5, 0.15, c("colon", "rectum"), cex=1, pch=1,col=c("red","blue"))
+legend(0.5, 0.15, c("colon", "rectum"), cex=1, pch=19,col=c("red","blue"))
 
 ##AFTER REMOVING HYPERMUTATED SAMPLES
 
@@ -107,4 +113,3 @@ legend(0.5, 0.08, c("colon", "rectum"), cex=1, pch=1,col=c("red","blue"))
 
 
 #do we now want to use partition around medoids basd on the number of clusters I think we have from the MDS plot?
-

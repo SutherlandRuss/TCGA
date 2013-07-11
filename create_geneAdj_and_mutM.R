@@ -7,11 +7,10 @@
 library(igraph)
 
 # The data file in vcf-like format.
-#geneScores.path <- dirname("/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
+#geneScores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 geneScores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 #geneScores.path <- dirname("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
 
-#geneScores.file <- basename("/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
 geneScores.file <- "colorectalcancer.maf"
 #geneScores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
 
@@ -142,9 +141,38 @@ geneAdjIndex<-lapply(seq_len(length(geneNeighbourhoodsNames)), function(y) unlis
 
 
 ##Variables to indicate the cancerType of each sample and the colour associated with each cancer type
+seqTech<-unique(cbind(mutations$Sequencer,as.character(mutations$sampleID)))
+seqTech<- sub(" ","", seqTech)
 cancerType<-unique(cbind(mutations$Cancer_type,as.character(mutations$sampleID)))
 cancerType<- cancerType[order(cancerType[,2], decreasing = FALSE),]
-sampleColors <- vector("character", length(cancerType[,1]))
-sampleColors[which(cancerType[,1]=="colon")]<- "red"
-sampleColors[which(cancerType[,1]!="colon")]<- "blue"
 
+
+colourSamples<-function(metadata){
+  
+  sampleColors <- vector("character", length(metadata[,1]))
+  
+  sampleColors[which(metadata[,1]=="colon")]<-"red"
+  sampleColors[which(metadata[,1]=="rectum")]<-"blue"
+  return(sampleColors)
+}
+sampleColors<-colourSamples(cancerType)
+
+#after generating the tables from the create metadata structure program
+metadata<-colorectal[,match(colnames(mutMatLogicalOrdered), colnames(colorectal))]
+
+#checks that the metadata table contains only the records for the ids I have geneScores for. I have 9 NAs
+setdiff(colnames(metadata),colnames(mutMatLogicalOrdered))
+
+#makes sure to match the metadata samples to those int mutMatLogicalOrdered
+matchingSamplesIndex<-which(colnames(mutMatLogicalOrdered)%in%colnames(metadata))
+mutMatLogicalOrdered<- mutMatLogicalOrdered[,matchingSamplesIndex]
+metadata<- metadata[,matchingSamplesIndex]
+# the metadata and mutMatLogicalOrdered matrices now have the same samples and I can run logistic regression.
+#then calculate the dissimilarity between samples based on the mutMatLogicalOrdered
+medoidsModel<-pam(c, k=3)
+
+
+#for the logistic regression
+
+
+help(glm)
