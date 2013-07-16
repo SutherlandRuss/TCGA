@@ -12,8 +12,8 @@
 #'
 #'  
 #'  
-#setwd("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/1014_06_2013")
-setwd("C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/2428_06_2013")
+setwd("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/1014_06_2013")
+#setwd("C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/2428_06_2013")
 
 
 

@@ -15,6 +15,8 @@ silentVsNonSilentRatio<- sapply(seq(1:length(uniqueSamples)), function(x) (snvIn
 #1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
 #2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
 indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
+
+
 #plotbycancerType
 snvIndelBarPlotPoints<-snvIndelBarPlotPoints[which(cancerType=="rectum"),]
 indelSNVratio<-indelSNVratio[which(cancerType=="rectum")]
@@ -70,9 +72,9 @@ t<- countMatch1(mutM)
 u<- compDiss(t,1,mutM)
 v<-cmdscale(u,k=2)
 par(mar=c(5,5,5,5))
-plot(v[,1],v[,2], pch = 19, col=sampleColors, cex=0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
+plot(v[,1],v[,2], pch = 19, col=sampleColors, cex=0.8, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
 points(v[hyperIndex,1], v[hyperIndex,2],pch=1, cex = 1.5)
-legend(0.5, 0.08, c("Illumina", "Solid","hypermutated"), cex=1, pch=c(19,19,1),col=c("red","blue","black"))
+legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
 
 
 plot(v[,1],v[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
@@ -90,7 +92,7 @@ e<-cmdscale(c,k=2)
 par(mar=c(5,5,5,5))
 plot(e[,1],e[,2], col=sampleColors, pch =19,cex=0.8, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n after network processing of mutation matrix")
 points(e[hyperIndex,1], e[hyperIndex,2],pch=1, cex = 1.5)
-legend(0.5, 0.15, c("colon", "rectum"), cex=1, pch=19,col=c("red","blue"))
+legend(0.4, 0.15, c("Illumina", "Solid","hypermutated"), cex=1, pch=c(19,19,1),col=c("red","blue","black"))
 
 ##AFTER REMOVING HYPERMUTATED SAMPLES
 
@@ -113,3 +115,9 @@ legend(0.5, 0.08, c("colon", "rectum"), cex=1, pch=1,col=c("red","blue"))
 
 
 #do we now want to use partition around medoids basd on the number of clusters I think we have from the MDS plot?
+
+
+
+#table giving the crosstab of two metadata variables
+ crossT<-table(cbind(cancerType[,2], cancerType[,1], seqTech[,1])[,2],cbind(cancerType[,2], cancerType[,1], seqTech[,1])[,3])
+ 

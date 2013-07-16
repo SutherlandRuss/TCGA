@@ -8,8 +8,8 @@ library(igraph)
 
 # The data file in vcf-like format.
 #geneScores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-geneScores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-#geneScores.path <- dirname("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
+#geneScores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+geneScores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 geneScores.file <- "colorectalcancer.maf"
 #geneScores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
@@ -72,8 +72,8 @@ colnames(mutationMatrixLogical)<- colnames(mutationTable)
 # load network
 #########################################################################################################################
 
-network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-#network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
 #network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
@@ -143,6 +143,7 @@ geneAdjIndex<-lapply(seq_len(length(geneNeighbourhoodsNames)), function(y) unlis
 ##Variables to indicate the cancerType of each sample and the colour associated with each cancer type
 seqTech<-unique(cbind(mutations$Sequencer,as.character(mutations$sampleID)))
 seqTech<- sub(" ","", seqTech)
+seqTech<- seqTech[order(seqTech[,2], decreasing = FALSE),]
 cancerType<-unique(cbind(mutations$Cancer_type,as.character(mutations$sampleID)))
 cancerType<- cancerType[order(cancerType[,2], decreasing = FALSE),]
 
@@ -151,11 +152,11 @@ colourSamples<-function(metadata){
   
   sampleColors <- vector("character", length(metadata[,1]))
   
-  sampleColors[which(metadata[,1]=="colon")]<-"red"
-  sampleColors[which(metadata[,1]=="rectum")]<-"blue"
+  sampleColors[which(metadata[,1]=="IlluminaHiSeq")]<-"red"
+  sampleColors[which(metadata[,1]=="SOLID")]<-"blue"
   return(sampleColors)
 }
-sampleColors<-colourSamples(cancerType)
+sampleColors<-colourSamples(seqTech)
 
 #after generating the tables from the create metadata structure program
 metadata<-colorectal[,match(colnames(mutMatLogicalOrdered), colnames(colorectal))]
