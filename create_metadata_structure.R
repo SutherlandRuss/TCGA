@@ -83,14 +83,31 @@ clinicalDataTable<- function(rectumClinical.path){
   return(clinicalData)
 }
 
-#colon and rectum data
+
+# function to combine metadata tables and ensures that variables remain in the correct order so that columns match netween the two joined tables
+combineMetadata<- function(table1,table2){
+  table1<-table1[,order(match(colnames(table1), colnames(table2)))]
+  combinedT<-t(rbind(table1,table2))
+  colnames(combinedT)<-combinedT[which(rownames(combinedT)=="SampleIds"),]
+  return(combinedT)
+}
+
+
+#load colon and rectum data
 colon<-clinicalDataTable(colonClinical.path)
 rectum<-clinicalDataTable(rectumClinical.path)
 # order the colon columns the same way as they rectum columns
-colon<-colon[,order(match(colnames(colon),colnames(rectum)))]
+#colon<-colon[,order(match(colnames(colon),colnames(rectum)))]
+#colorectal<- t(rbind(colon,rectum))# my metadata table to combine with the genescores data
+#colnames(colorectal)<-colorectal[which(rownames(colorectal)=="SampleIds"),]
 
-colorectal<- t(rbind(colon,rectum))# my metadata table to combine with the genescores data
-colnames(colorectal)<-colorectal[which(rownames(colorectal)=="SampleIds"),]
+#combine the colon and rectum metadata tables
+colorectal<- combineMetadata(colon,rectum)
+
+
+
+
+
 
 
 setwd("C:/users/rds/Desktop")

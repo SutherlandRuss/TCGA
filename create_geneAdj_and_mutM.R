@@ -7,31 +7,45 @@
 library(igraph)
 
 # The data file in vcf-like format.
-#geneScores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-#geneScores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-geneScores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
-geneScores.file <- "colorectalcancer.maf"
-#geneScores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
+scores.file <- "colorectalcancer.maf"
+#scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
 
+dataFile<-file.path(scores.path,scores.file)
 
-geneScores<- read.table(file.path(geneScores.path,geneScores.file) , header=TRUE, sep = "\t", quote = "", stringsAsFactors = FALSE)
-geneScores<- unique(geneScores)
-#Splitting the TCGA barcode in to the minimum  number of fields to uniquely identify individuals
-samples<- strsplit(geneScores$Tumor_Sample_Barcode, split = "-", fixed = TRUE)
-# Unique sample IDs
-#sampleID<- matrix(sapply(1:length(samples),function(x) paste0(samples[[x]][1], samples[[x]][2], samples[[x]][3])))
-sampleID<- unlist(lapply(samples,function(x) paste(x[1:3],collapse="")), use.names=FALSE)
+#The function to read the data in to the scores table
+createScoreTable<- function(dataFile){
+  scores<- read.table(dataFile , header=TRUE, sep = "\t", quote = "", stringsAsFactors = FALSE)
+  scores<- unique(scores)
+  #Splitting the TCGA barcode in to the minimum  number of fields to uniquely identify individuals
+  samples<- strsplit(scores$Tumor_Sample_Barcode, split = "-", fixed = TRUE)
+  # Unique sample IDs
+  #sampleID<- matrix(sapply(1:length(samples),function(x) paste0(samples[[x]][1], samples[[x]][2], samples[[x]][3])))
+  sampleID<- unlist(lapply(samples,function(x) paste(x[1:3],collapse="")), use.names=FALSE)
+  
+  #adding the sampleID to the geneScore dataframe
+  scores <-cbind(scores, sampleID)
+  return(scores)
+}
 
-#adding the sampleID to the geneScore dataframe
-geneScores <-cbind(geneScores, sampleID)
+scores<-createScoreTable(dataFile)
 #the list of unique samples
-uniqueSamples<- unique(geneScores$sampleID)
+uniqueSamples<- unique(scores$sampleID)
 #attach unique sampleIDs to each mutation
 
 # gives me the matrix of "functional mutations"
-mutations<-geneScores[which(geneScores$Variant_Classification!="Silent"),]
-colnames(mutations)<- colnames(geneScores)
+# requires a raw "scores" table as input, like you would get from the createScoreTable function
+getFuncMutations<-function(scoresT){
+  mutations<-scoresT[which(scores$Variant_Classification!="Silent"),]
+  colnames(mutations)<- colnames(scoresT)
+  return (mutations)
+}
+
+#mutations<-scores[which(scores$Variant_Classification!="Silent"),]
+#colnames(mutations)<- colnames(scores)
 
 # nonsilent mutations per individual
 mutationsTypePerIndiv<-table(mutations$Variant_Classification, mutations$sampleID)
@@ -43,8 +57,8 @@ mutationsPerGene <-aggregate(mutations[,1], by=list(mutations$Hugo_Symbol), leng
 
 
 # The matrix of "non-silent mutations"
-mutations<-geneScores[which(geneScores$Variant_Classification!="Silent"),]
-colnames(mutations)<- colnames(geneScores)
+mutations<-scores[which(scores$Variant_Classification!="Silent"),]
+colnames(mutations)<- colnames(scores)
 
 mutationTable<- table(mutations$Hugo_Symbol, mutations$sampleID)
 ranksGenesTest<- rownames(mutationTable)
@@ -161,7 +175,7 @@ sampleColors<-colourSamples(seqTech)
 #after generating the tables from the create metadata structure program
 metadata<-colorectal[,match(colnames(mutMatLogicalOrdered), colnames(colorectal))]
 
-#checks that the metadata table contains only the records for the ids I have geneScores for. I have 9 NAs
+#checks that the metadata table contains only the records for the ids I have scores for. I have 9 NAs
 setdiff(colnames(metadata),colnames(mutMatLogicalOrdered))
 
 #makes sure to match the metadata samples to those int mutMatLogicalOrdered
