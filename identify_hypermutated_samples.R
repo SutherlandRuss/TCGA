@@ -72,7 +72,7 @@ points(silentMutationsForPlot, col="blue", pch =20)
 ## mds plot of sample similarities BEFORE processing using the networ_informed_clustering_function script
 # mutationMatrixLogicalOrdered is used as the input to the count match algorithm
 
-t<- countMatch1(mutM)
+t<- countMatch1(t(mutM))
 u<- compDiss(t,1,mutM)
 v<-cmdscale(u,k=2, eig=TRUE)
 par(mar=c(5,5,5,5))
@@ -125,3 +125,15 @@ legend(0.5, 0.08, c("colon", "rectum"), cex=1, pch=1,col=c("red","blue"))
 #table giving the crosstab of two metadata variables
  crossT<-table(cbind(cancerType[,2], cancerType[,1], seqTech[,1])[,2],cbind(cancerType[,2], cancerType[,1], seqTech[,1])[,3])
  
+#identify the genes driving the difference between sequencing technologies using fishers exact test.
+# Generate a table for each gene (row of mutMatLogicalOrdered) and the sequencing machine label from seqTech.
+
+table(mutMatLogicalOrdered[1,],seqTech[,1])
+
+crossTB<- lapply(seq(1:length(mutMatLogicalOrdered[,1])), function(x) table(mutMatLogicalOrdered[x,], seqTech[,1]))
+FtestsResult<- matrix(NA, nrow=length(mutMatLogicalOrdered[,1]), ncol=1, dimnames=list(rownames(mutMatLogicalOrdered),"p_value"))
+Ftests<- lapply(seq(1:length(crossTB)), function(x) fisher.test(matrix(crossTB[[x]],2,2))[[1]])
+Ftests<-unlist(Ftests)
+names(Ftests)<- rownames(mutMatLogicalOrdered)
+Ftests<-Ftests[order(Ftests,decreasing=FALSE)]
+names(Ftests)<- rownames(mutMatLogicalOrdered)
