@@ -35,22 +35,26 @@ mtext("ratio of indels to SNV mutations",side=4,line=0, adj=0.5, padj=2.5)
 mtext("samples ordered by mutation frequency",side=1, adj=0.5,padj=2.0)
 legend(0.8*length(indelSNVratio),0.5, c("SNV","indel"), lty=c(1,1),lwd=c(2.5,2.5),col=c("blue","red"))
 length(which(silentVsNonSilentRatio>20))
-hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
+#hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
 # colnames(mutM) and rownames(silentAndNonSilentMutations)
-mutMHMRemoved<- mutM[,-match(hypermutatedSampleNames,colnames(mutM))]# use this to generate new plots
-hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
+#mutMHMRemoved<- mutM[,-match(hypermutatedSampleNames,colnames(mutM))]# use this to generate new plots
+#hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
 
-sampleColors[match(hypermutatedSampleNames, colnames(mutM))]<- "green" #
+#sampleColors[match(hypermutatedSampleNames, colnames(mutM))]<- "green" #
 
 
 
 #plotting the mutation frequency of each sample
 
 
-silentMutations<-geneScores[which(geneScores$Variant_Classification=="Silent"),]
+silentMutations<-scores[which(scores$Variant_Classification=="Silent"),]
 
 silentAndNonSilentMutations <-cbind(table(silentMutations$sampleID), table(mutations$sampleID))
 silentAndNonSilentMutations<-silentAndNonSilentMutations[order(silentAndNonSilentMutations[,2], decreasing=TRUE),]
+hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
+hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
+
+
 plot(silentAndNonSilentMutations[,2], log="y", ylim=c(1, max(silentAndNonSilentMutations[,2])), col="red", pch=20,cex=0.5, xaxt="n",
      main="total number of mutations per sample \n ordered from largest to smallest number of non-silent mutations")
 points(silentAndNonSilentMutations[,1], col="blue", pch=20, cex=0.5)
@@ -70,10 +74,10 @@ points(silentMutationsForPlot, col="blue", pch =20)
 
 t<- countMatch1(mutM)
 u<- compDiss(t,1,mutM)
-v<-cmdscale(u,k=2)
+v<-cmdscale(u,k=2, eig=TRUE)
 par(mar=c(5,5,5,5))
-plot(v[,1],v[,2], pch = 19, col=sampleColors, cex=0.8, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
-points(v[hyperIndex,1], v[hyperIndex,2],pch=1, cex = 1.5)
+plot(v$points[,1],v$points[,2], pch = 19, col=sampleColors, cex=0.8, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
+points(v$points[hyperIndex,1], v$points[hyperIndex,2],pch=1, cex = 1.5)
 legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
 
 

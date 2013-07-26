@@ -8,8 +8,8 @@ library(igraph)
 
 # The data file in vcf-like format.
 #scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.file <- "colorectalcancer.maf"
 #scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
@@ -44,8 +44,8 @@ getFuncMutations<-function(scoresT){
   return (mutations)
 }
 
-#mutations<-scores[which(scores$Variant_Classification!="Silent"),]
-#colnames(mutations)<- colnames(scores)
+mutations<-scores[which(scores$Variant_Classification!="Silent"),]
+colnames(mutations)<- colnames(scores)
 
 # nonsilent mutations per individual
 mutationsTypePerIndiv<-table(mutations$Variant_Classification, mutations$sampleID)
@@ -86,8 +86,8 @@ colnames(mutationMatrixLogical)<- colnames(mutationTable)
 # load network
 #########################################################################################################################
 
-#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
+network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
 #network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
@@ -172,6 +172,21 @@ colourSamples<-function(metadata){
 }
 sampleColors<-colourSamples(seqTech)
 
+# a function to generate a color able for the samples, you just need to supply the variable name you wish to use as a categorical variable.
+# This will return an numeric vector with samples labelled according to their metadata group using integers. This integer is used by the col attribute in the plot function to generate point colors.
+sampstr<-function(metadata, variableName){
+  met<-colorectal[which(rownames(colorectal)==variableName),]# the metadata variable
+  groups<-unique(colorectal[which(rownames(colorectal)==variableName),])
+  colrs<-sapply(tst, function(x) which(groups==x))# the colour indeces to be used to color plots points
+  return(cbind(colrs,met))
+}
+
+smpclrs<-sampstr(metadata,"histological_type")
+
+
+tst<-colorectal[which(rownames(colorectal)=="histological_type"),]
+ret<-sapply(tst, function(x) which(groups==x))
+
 #after generating the tables from the create metadata structure program
 metadata<-colorectal[,match(colnames(mutMatLogicalOrdered), colnames(colorectal))]
 
@@ -184,6 +199,15 @@ mutMatLogicalOrdered<- mutMatLogicalOrdered[,matchingSamplesIndex]
 metadata<- metadata[,matchingSamplesIndex]
 # the metadata and mutMatLogicalOrdered matrices now have the same samples and I can run logistic regression.
 #then calculate the dissimilarity between samples based on the mutMatLogicalOrdered
+
+# 
+#
+### I need to filter each of the matrices I use in other scripts so that they only use data for the samples thatare present in both the metadata and the sequence data files
+
+
+
+
+library(cluster)
 medoidsModel<-pam(c, k=3)
 
 
