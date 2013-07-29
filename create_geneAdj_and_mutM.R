@@ -8,8 +8,8 @@ library(igraph)
 
 # The data file in vcf-like format.
 #scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.file <- "colorectalcancer.maf"
 #scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
@@ -32,6 +32,12 @@ createScoreTable<- function(dataFile){
 }
 
 scores<-createScoreTable(dataFile)
+
+# in order to analyse each sequencer's sample separately
+muts<-split(scores, scores$Sequencer)
+scores<- muts[[1]]
+#scores<- muts[2]
+
 #the list of unique samples
 uniqueSamples<- unique(scores$sampleID)
 #attach unique sampleIDs to each mutation
@@ -44,8 +50,11 @@ getFuncMutations<-function(scoresT){
   return (mutations)
 }
 
+
 mutations<-scores[which(scores$Variant_Classification!="Silent"),]
 colnames(mutations)<- colnames(scores)
+
+
 
 # nonsilent mutations per individual
 mutationsTypePerIndiv<-table(mutations$Variant_Classification, mutations$sampleID)
@@ -86,8 +95,8 @@ colnames(mutationMatrixLogical)<- colnames(mutationTable)
 # load network
 #########################################################################################################################
 
-#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
+network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
 #network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
@@ -166,11 +175,11 @@ colourSamples<-function(metadata){
   
   sampleColors <- vector("character", length(metadata[,1]))
   
-  sampleColors[which(metadata[,1]=="IlluminaHiSeq")]<-"red"
-  sampleColors[which(metadata[,1]=="SOLID")]<-"blue"
+  sampleColors[which(metadata[,1]=="colon")]<-"red"
+  sampleColors[which(metadata[,1]=="rectum")]<-"blue"
   return(sampleColors)
 }
-sampleColors<-colourSamples(seqTech)
+sampleColors<-colourSamples(cancerType)
 
 # a function to generate a color able for the samples, you just need to supply the variable name you wish to use as a categorical variable.
 # This will return an numeric vector with samples labelled according to their metadata group using integers. This integer is used by the col attribute in the plot function to generate point colors.

@@ -72,7 +72,7 @@ points(silentMutationsForPlot, col="blue", pch =20)
 ## mds plot of sample similarities BEFORE processing using the networ_informed_clustering_function script
 # mutationMatrixLogicalOrdered is used as the input to the count match algorithm
 
-t<- countMatch1(t(mutM))
+t<- countMatch1(mutM)
 u<- compDiss(t,1,mutM)
 v<-cmdscale(u,k=2, eig=TRUE)
 par(mar=c(5,5,5,5))
@@ -131,9 +131,29 @@ legend(0.5, 0.08, c("colon", "rectum"), cex=1, pch=1,col=c("red","blue"))
 table(mutMatLogicalOrdered[1,],seqTech[,1])
 
 crossTB<- lapply(seq(1:length(mutMatLogicalOrdered[,1])), function(x) table(mutMatLogicalOrdered[x,], seqTech[,1]))
+names(crossTB)<- rownames(mutMatLogicalOrdered)
+
 FtestsResult<- matrix(NA, nrow=length(mutMatLogicalOrdered[,1]), ncol=1, dimnames=list(rownames(mutMatLogicalOrdered),"p_value"))
 Ftests<- lapply(seq(1:length(crossTB)), function(x) fisher.test(matrix(crossTB[[x]],2,2))[[1]])
 Ftests<-unlist(Ftests)
 names(Ftests)<- rownames(mutMatLogicalOrdered)
-Ftests<-Ftests[order(Ftests,decreasing=FALSE)]
-names(Ftests)<- rownames(mutMatLogicalOrdered)
+#Ftests<-Ftests[order(Ftests,decreasing=FALSE)]
+Ftests[which(Ftests<0.05/(length(Ftests)))]# this lets me know if there is a bias between sequencing technologies in the number of individuals carrying at least one mutation in a gene.
+crossTB[which(Ftests<0.05/(length(Ftests)))]
+
+
+#test to see if there are more total mutatuions identified by Illumina than Solid
+fisher.test(table(mutations[,1], mutations$Sequencer))
+
+genesBySequencer<-table(mutations$Hugo_Symbol,mutations$Sequencer)
+
+#testforsequencer bias
+#not sure which test to use as they give different p-values
+binom.test(genesBySequencer[1,], p= 1/(sum(genesBySequencer[1,])/2))
+binom.test(genesBySequencer[2,], n=sum(genesBySequencer[2,]))
+
+
+#non-metricMDS doesn't work properly yet
+isoMDS(u, y = cmdscale(u, 2), k = 2, maxit = 50, trace = TRUE,
+       +        tol = 1e-3, p = 2)
+
