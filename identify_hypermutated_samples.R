@@ -81,9 +81,9 @@ points(v$points[hyperIndex,1], v$points[hyperIndex,2],pch=1, cex = 1.5)
 legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
 
 
-plot(v[,1],v[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
-text(v[,1],v[,2], labels = as.character(1:nrow(v)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
-points(v[hyperIndex,1], v[hyperIndex,2],pch=1, cex = 2)
+plot(v$points[,1],v$points[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
+text(v$points[,1],v$points[,2], labels = as.character(1:nrow(v)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
+points(v$points[hyperIndex,1], v$points[hyperIndex,2],pch=1, cex = 2)
 
 plot(e[,1],e[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
 text(e[,1],e[,2], labels = as.character(1:nrow(e)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
@@ -153,7 +153,7 @@ binom.test(genesBySequencer[1,], p= 1/(sum(genesBySequencer[1,])/2))
 binom.test(genesBySequencer[2,], n=sum(genesBySequencer[2,]))
 
 
-#non-metricMDS doesn't work properly yet
+#non-metricMDS doesn't work properly yet. sample165 and 187 are identical...
 isoMDS(u, y = cmdscale(u, 2), k = 2, maxit = 50, trace = TRUE,
        +        tol = 1e-3, p = 2)
 
