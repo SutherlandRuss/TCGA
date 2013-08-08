@@ -82,7 +82,7 @@ legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),
 
 
 plot(v$points[,1],v$points[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
-text(v$points[,1],v$points[,2], labels = as.character(1:nrow(v)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
+text(v$points[,1],v$points[,2], labels = as.character(1:nrow(v$points)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
 points(v$points[hyperIndex,1], v$points[hyperIndex,2],pch=1, cex = 2)
 
 plot(e[,1],e[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")

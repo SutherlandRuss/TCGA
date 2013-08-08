@@ -209,7 +209,42 @@ metadata<- metadata[,matchingSamplesIndex]
 # the metadata and mutMatLogicalOrdered matrices now have the same samples and I can run logistic regression.
 #then calculate the dissimilarity between samples based on the mutMatLogicalOrdered
 
-# 
+
+#to get the table of metadata
+metadata_tab<- as.data.frame(t(metadata))
+table(metadata_tab[])
+table(metadata_tab$tumourType,metadata_tab$tumor_stage)
+###
+#same as line 206-208
+#
+matchingCancerSamplesIndex<-which(cancerType[,2]%in%colnames(metadata))
+cancerType1<- cancerType[matchingCancerSamplesIndex,]
+
+matchingSeqTechSamplesIndex<-which(seqTech[,2]%in%colnames(metadata))
+seqTech1<- seqTech[matchingSeqTechSamplesIndex,]
+
+metadata_tab<- cbind(metadata_tab,cancerType=cancerType1[,1], seqTech=seqTech1[,1])
+
+#use the tapply function to split the table function across seqTech or cancerType.
+tapply(as.numeric(metadata_tab$weight),metadata_tab$seqTech,mean)
+
+#### function to extract appropriate samples from the sequence databased on those present in both the 
+#### sequence data (mutMatLogicalOrdered) and colorectal metadata
+
+extractSamples<- function(SeqInfoNames,MetadataNames, SeqInfo){
+  if(class(SeqInfoNames)!= "character"||class(MetadataNames)!="character"){
+    stop("Both SeqInfoNames and MetadataNames must be of character type")}else{
+  SampleMatchI<- which(SeqInfoNames%in%MetadataNames)
+  NewSeqInfo <- SeqInfo[SampleMatchI]
+  return(NewSeqInfo)
+    }
+}
+
+
+metadata_tab2<-cbind(metadata_tab,extractSamples(seqTech[,2],colnames(metadata), seqTech[,1]))
+## I need to check that this new variable is the same as the metadata_tab table, to make sure the above fuinction is working. Once I know it is working I can delete the other code and supplement it with the function.
+
+class(seqTech[,2])
 #
 ### I need to filter each of the matrices I use in other scripts so that they only use data for the samples thatare present in both the metadata and the sequence data files
 
