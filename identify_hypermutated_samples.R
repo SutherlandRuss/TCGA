@@ -11,7 +11,7 @@ abline(0,cor(mutationsPerIndiv[,2], mutationsSilentPerIndiv,method= "pearson"),c
 snvIndelBarPlotPoints<- cbind(mutationsPerIndiv[,2],mutationsSilentPerIndiv)[order(mutationsPerIndiv[,2], decreasing =TRUE),]
 barplot(mutationsPerIndiv[order(mutationsPerIndiv[,2], decreasing=TRUE),2], border="gray")
 
-silentVsNonSilentRatio<- sapply(seq(1:length(uniqueSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
+silentVsNonSilentRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
 #1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
 #2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
 indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])

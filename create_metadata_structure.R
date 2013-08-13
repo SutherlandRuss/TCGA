@@ -5,8 +5,8 @@ library("plyr")
 
 #The basename for the clinical files
 #colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-#colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+#colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 
 #the names of the clinical files
 #clinical.files<-list(list.files("C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab"))
@@ -20,8 +20,8 @@ colonClinicalTables <- lapply(clinical.files, read.table, header=TRUE, sep = "\t
 
 #The basename for the rectal clinical files
 #rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-#rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+#rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 
 
 
@@ -79,6 +79,8 @@ clinicalDataTable<- function(rectumClinical.path){
   tumourType<- matrix("rectum", ncol=1, nrow=length(clinicalData[,1]))
   # Add disease identifier to the clinicalData
   clinicalData<-cbind(clinicalData,tumourType)
+  #change the SampleIds names to sampleID
+  colnames(clinicalData)[1]<-"sampleID"
   return(clinicalData)
 }
 
@@ -87,7 +89,7 @@ clinicalDataTable<- function(rectumClinical.path){
 combineMetadata<- function(table1,table2){
   table1<-table1[,order(match(colnames(table1), colnames(table2)))]
   combinedT<-t(rbind(table1,table2))
-  colnames(combinedT)<-combinedT[which(rownames(combinedT)=="SampleIds"),]
+  colnames(combinedT)<-combinedT[1,]
   return(combinedT)
 }
 
@@ -102,6 +104,7 @@ rectum<-clinicalDataTable(rectumClinical.path)
 
 #combine the colon and rectum metadata tables
 colorectal<- combineMetadata(colon,rectum)
+#colorectal<-as.data.frame(colorectal) I don't need this to be a datframe 
 
 
 

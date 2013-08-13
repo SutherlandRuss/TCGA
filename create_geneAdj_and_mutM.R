@@ -7,9 +7,9 @@
 library(igraph)
 
 # The data file in vcf-like format.
-#scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 #scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.file <- "colorectalcancer.maf"
 #scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
@@ -96,8 +96,8 @@ colnames(mutationMatrixLogical)<- colnames(mutationTable)
 #########################################################################################################################
 
 #network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
-#network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
+network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
 network.file  <- paste0(network.name,".simple")
@@ -243,6 +243,7 @@ extractSamples<- function(SeqInfoNames,MetadataNames, SeqInfo){
 
 metadata_tab2<-cbind(metadata_tab,extractSamples(seqTech[,2],colnames(metadata), seqTech[,1]))
 ## I need to check that this new variable is the same as the metadata_tab table, to make sure the above fuinction is working. Once I know it is working I can delete the other code and supplement it with the function.
+identical(metadata_tab[,!c(105,106)],metadata_tab2[,!c(105,106,107)])# the two dataframes are identical and the matrices match back to the metadata matrix. I should use metadata_tab2 as the basis for my analysis.
 
 class(seqTech[,2])
 #
