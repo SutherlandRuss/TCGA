@@ -1,5 +1,6 @@
 # script to identify hypermutated samples
 
+library("scales")
 plot(mutationsPerIndiv[,2],mutationsSilentPerIndiv)
 abline(0,1, col="red")
 
@@ -75,11 +76,15 @@ points(silentMutationsForPlot, col="blue", pch =20)
 t<- countMatch1(mutM)
 u<- compDiss(t,1,mutM)
 v<-cmdscale(u,k=2, eig=TRUE)
-par(mar=c(5,5,5,5))
-plot(v$points[,1],v$points[,2], pch = 19, col=sampleColors, cex=0.8, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
+par(mar=c(5,5,5,25))
+par(xpd=TRUE)
+plot(v$points[,1],v$points[,2], pch = 19, col=alpha(smpclrs[,1],0.5), cex=1.0, cex.lab= 1.5, cex.main = 1.5, cex.axis=1.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
 points(v$points[hyperIndex,1], v$points[hyperIndex,2],pch=1, cex = 1.5)
-legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
+#legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
+legend(0.75, max(v$points[,2]+0.009), unique(smpclrs[,2]), cex=1.2,pt.cex=1.0, pch=c(rep(19, length(unique(smpclrs[,2])))),col=seq_along(1:length(unique(smpclrs[,1]))))
 
+#start my loop to create all possible colorings of the MDS plot.look tongiht at how to structure a tapply function
+tapply()
 
 plot(v$points[,1],v$points[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
 text(v$points[,1],v$points[,2], labels = as.character(1:nrow(v$points)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
