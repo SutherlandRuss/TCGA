@@ -39,7 +39,7 @@ length(which(silentVsNonSilentRatio>20))
 #hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
 # colnames(mutM) and rownames(silentAndNonSilentMutations)
 #mutMHMRemoved<- mutM[,-match(hypermutatedSampleNames,colnames(mutM))]# use this to generate new plots
-#hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
+hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
 
 #sampleColors[match(hypermutatedSampleNames, colnames(mutM))]<- "green" #
 
@@ -84,7 +84,25 @@ points(v$points[hyperIndex,1], v$points[hyperIndex,2],pch=1, cex = 1.5)
 legend(0.75, max(v$points[,2]+0.009), unique(smpclrs[,2]), cex=1.2,pt.cex=1.0, pch=c(rep(19, length(unique(smpclrs[,2])))),col=seq_along(1:length(unique(smpclrs[,1]))))
 
 #start my loop to create all possible colorings of the MDS plot.look tongiht at how to structure a tapply function
-tapply()
+# iterate over all possible colourings
+
+##function of the code above##
+
+MDSplot<- function(mdsPoints,smplclrs,hyperMutIndex){
+  par(mar=c(5,5,5,25))
+  par(xpd=TRUE)
+  plot(mdsPoints$points[,1],mdsPoints$points[,2], pch = 19, col=alpha(smplclrs[,1],0.5), cex=1.2, cex.lab= 1.5, cex.main = 1.5, cex.axis=1.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
+  points(mdsPoints$points[hyperIndex,1], mdsPoints$points[hyperIndex,2],pch=1, cex = 1.9)
+  #legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
+  legend(0.72, max(v$points[,2]+0.009), c(unique(smplclrs[,2]),"hypermutated"), cex=1.5,pt.cex=1.2, pch=c(rep(19, length(unique(smplclrs[,2]))),1),col=c(seq_along(1:length(unique(smplclrs[,1]))),1))
+}
+
+for (i in seq(35,length(names(stratification)))){
+  pdf(paste(i,"_",names(stratification[i]),".pdf", sep=""), width=15, height=10)
+  MDSplot(v,stratification[[i]],hyperIndex)
+  dev.off()
+}
+##some of the stratification variables have NA values. Investigate this.
 
 plot(v$points[,1],v$points[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
 text(v$points[,1],v$points[,2], labels = as.character(1:nrow(v$points)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
