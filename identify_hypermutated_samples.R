@@ -39,7 +39,7 @@ length(which(silentVsNonSilentRatio>20))
 #hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
 # colnames(mutM) and rownames(silentAndNonSilentMutations)
 #mutMHMRemoved<- mutM[,-match(hypermutatedSampleNames,colnames(mutM))]# use this to generate new plots
-hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
+#hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
 
 #sampleColors[match(hypermutatedSampleNames, colnames(mutM))]<- "green" #
 
@@ -54,6 +54,11 @@ silentAndNonSilentMutations <-cbind(table(silentMutations$sampleID), table(mutat
 silentAndNonSilentMutations<-silentAndNonSilentMutations[order(silentAndNonSilentMutations[,2], decreasing=TRUE),]
 hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
 hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
+#hypermutated metadata variable
+hypermutatedMetaData<-colnames(metadata2)%in%hypermutatedSampleNames# hypermutated samples are identified in the metadata2 table using this variable
+metadata2<- rbind(metadata2, hypermutatedMetaData)
+##reassign NA non-existent values to "[Not Available]".
+metadata2[(which(is.na(metadata2)))]<-"[Not Available]"
 
 
 plot(silentAndNonSilentMutations[,2], log="y", ylim=c(1, max(silentAndNonSilentMutations[,2])), col="red", pch=20,cex=0.5, xaxt="n",
@@ -74,7 +79,9 @@ points(silentMutationsForPlot, col="blue", pch =20)
 # mutationMatrixLogicalOrdered is used as the input to the count match algorithm
 
 t<- countMatch1(mutM)
+#u<- compDiss(t[c(-178,-179,-156,-164),c(-178,-179,-156,-164)],1,mutM[,c(-178,-179,-156,-164)])
 u<- compDiss(t,1,mutM)
+
 v<-cmdscale(u,k=2, eig=TRUE)
 par(mar=c(5,5,5,25))
 par(xpd=TRUE)
@@ -103,6 +110,7 @@ for (i in seq(35,length(names(stratification)))){
   dev.off()
 }
 ##some of the stratification variables have NA values. Investigate this.
+MDSplot(v,stratification[[5]], hyperIndex)
 
 plot(v$points[,1],v$points[,2], type = "n", xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
 text(v$points[,1],v$points[,2], labels = as.character(1:nrow(v$points)), col = sampleColors, cex = 0.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of coloectal cancer samples \n before network processing of mutation matrix")
@@ -170,6 +178,14 @@ fisher.test(table(mutations[,1], mutations$Sequencer))
 
 genesBySequencer<-table(mutations$Hugo_Symbol,mutations$Sequencer)
 
+##hypermutation tables
+hyperMutTB<-crossTB<- lapply(seq(1:length(colnames(metadata3))), function(x) table(metadata3[,x], metadata3$hypermutatedMetaData))
+names(hyperMutTB)<- colnames(metadata3)
+
+#To find statistical difference between the hypermutated samples and non-hypermutated samples I now need to use Fisher's test for 2*2 contingency tables and chi-square for anything else.For scale data neither is appropriate and I should use a T-test instead
+
+
+
 #testforsequencer bias
 #not sure which test to use as they give different p-values
 binom.test(genesBySequencer[1,], p= 1/(sum(genesBySequencer[1,])/2))
@@ -177,6 +193,5 @@ binom.test(genesBySequencer[2,], n=sum(genesBySequencer[2,]))
 
 
 #non-metricMDS doesn't work properly yet. sample165 and 187 are identical...
-isoMDS(u, y = cmdscale(u, 2), k = 2, maxit = 50, trace = TRUE,
-       +        tol = 1e-3, p = 2)
+isoMDS(u, y = cmdscale(u, 2), k = 2, maxit = 50, trace = TRUE, tol = 1e-3, p = 2)
 
