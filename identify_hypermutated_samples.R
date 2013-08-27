@@ -9,8 +9,8 @@ abline(0,cor(mutationsPerIndiv[,2], mutationsSilentPerIndiv,method= "pearson"),c
 
 #barplot of SNV and indel frequency ordered by SNV frequency
 
-snvIndelBarPlotPoints<- cbind(mutationsPerIndiv[,2],mutationsSilentPerIndiv)[order(mutationsPerIndiv[,2], decreasing =TRUE),]
-barplot(mutationsPerIndiv[order(mutationsPerIndiv[,2], decreasing=TRUE),2], border="gray")
+snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,mutationsSilentPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
+barplot(mutationsPerIndiv[order(mutationsPerIndiv, decreasing=TRUE)], border="gray")
 
 silentVsNonSilentRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
 #1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
@@ -56,7 +56,7 @@ hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonS
 hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
 #hypermutated metadata variable
 hypermutatedMetaData<-colnames(metadata2)%in%hypermutatedSampleNames# hypermutated samples are identified in the metadata2 table using this variable
-metadata2<- rbind(metadata2, hypermutatedMetaData)
+metadata2<- rbind(metadata2, hypermutatedMetaData)#This needs to be put somewhere else
 ##reassign NA non-existent values to "[Not Available]".
 metadata2[(which(is.na(metadata2)))]<-"[Not Available]"
 
@@ -179,7 +179,8 @@ fisher.test(table(mutations[,1], mutations$Sequencer))
 genesBySequencer<-table(mutations$Hugo_Symbol,mutations$Sequencer)
 
 ##hypermutation tables
-hyperMutTB<-crossTB<- lapply(seq(1:length(colnames(metadata3))), function(x) table(metadata3[,x], metadata3$hypermutatedMetaData))
+metadata3<-as.data.frame(t(metadata2),stringsAsFactors=FALSE)
+hyperMutTB<-lapply(seq(1:length(colnames(metadata3))), function(x) table(metadata3[,x], metadata3$hypermutatedMetaData))
 names(hyperMutTB)<- colnames(metadata3)
 
 #To find statistical difference between the hypermutated samples and non-hypermutated samples I now need to use Fisher's test for 2*2 contingency tables and chi-square for anything else.For scale data neither is appropriate and I should use a T-test instead
