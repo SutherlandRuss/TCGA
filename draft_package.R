@@ -209,53 +209,14 @@ names(mutationsSilentPerIndiv)<-colnames(mutationsTypePerIndiv)
 
 
 
-#######################################################################################################################
-## Plot mean number of mutations oer gene per individual
-#######################################################################################################################
 mutationsPerIndiv <-tapply(mutations$Hugo_Symbol, mutations$sampleID,length)
 mutationsPerGene <-tapply(mutations$sampleID, mutations$Hugo_Symbol,length)
 
-test<- tapply(mutations$sampleID, mutations[,c("Hugo_Symbol","sampleID")], length)
-
-#gives me the mutations per individual per gene. I can now split this across a factor
-mutsPerIndivPerGene<-as.matrix(table(mutations$sampleID,mutations$Hugo_Symbol))
-muts
-#meanMutsPerIndivPerGene<- sapply(seq(1:dim(mutsPerIndivPerGene)[2]), function(x) mean(mutsPerIndivPerGene[,x]))
-
-#converts a table Object to a matrix object
-tableToMatrix<- function(tableData){
-  data<-as.matrix(tableData)
-  class(data)<- "matrix"
-  return(data)
-}
-
-
-matrixMutsPerIndivPerGene<- tableToMatrix(mutsPerIndivPerGene1)
-
-# Returns the mean number of mutations carried in each Individual for each gene.
-getPerGenePerSamp<- function(PerIndpGene){
-  #perIndivPerGene<-as.matrix(table(mutDataFrame$sampleID,mutDataFrame$Hugo_Symbol))
-  meanPerIndivPerGene<- sapply(seq(1:dim(PerIndpGene)[2]), function(x) mean(PerIndpGene[,x]))
-  return(meanPerIndivPerGene)
-}
-
-#test5<- getPerGenePerSamp(mutsPerIndivPerGene)#identical to meanMutsPerIndivPerGene
-
-stratMeanMutPIPG<-by(matrixMutsPerIndivPerGene, stratification$seqTech[,2], getPerGenePerSamp)# Using this I should simply be able to plug it in to getPerGenePerSamp
-#variables to order the mutations per individual per gene graph across chromosomes and bp
-maxMutPos<-tapply(mutations$Start_Position, mutations$Hugo_Symbol, max)
-geneChrNum<-mutations$Chr[match(ranksGenesTest,mutations$Hugo_Symbol)]
-
-
-
-plot(stratMeanMutPIPG[[1]], col=alpha(1,0.5), log="y")# The beginings of my plot according to sequencer Type
-points(stratMeanMutPIPG[[2]],col=alpha(2,0.5))
-
 ##################################################################################################################################################################################
 ##################################################################################################################################################################################
 
 
-##extra metadata_variables
+##EXTRA METADATA VARIABLES
 ##Variables to indicate the cancerType of each sample and the colour associated with each cancer type
 seqTech<-unique(cbind(mutations$Sequencer,as.character(mutations$sampleID)))
 seqTech<- sub(" ","", seqTech)
@@ -264,6 +225,8 @@ cancerType<-unique(cbind(mutations$Cancer_type,as.character(mutations$sampleID))
 cancerType<- cancerType[order(cancerType[,2], decreasing = FALSE),]
 
 metadata2<-cbind.data.frame(metadata2, cancerType=cancerType[,1], seqTech=seqTech[,1], stringsAsFactors=FALSE)# adds the cancerType and seqTech metadata to the metadata object
+
+
 
 # The matrix of "non-silent mutations"
 #mutations<-scores[which(scores$Variant_Classification!="Silent"),]
@@ -292,26 +255,7 @@ colnames(mutationMatrixLogical)<- colnames(mutationTable)
 
 #Begin again from here tomorrow. runcreate metadata and then this script
 ######################################################################################################################################
-#I need this to reassign all of the NA values to "[Not Available]" so that the which function in sampstr will work
-metadata3<-metadata2# in doing this, the metadata2 is no longer a dataframe with the correct data types.
-metadata3[is.na(metadata3)]<-"[Not Available]"
 
-sampstr<-function(metadata, variableName){
-  met<-metadata[,which(colnames(metadata)==variableName)]# the metadata variable
-  groups<-unique(metadata[,which(colnames(metadata)==variableName)])
-  colrs<-sapply(met, function(x) which(groups==x))# the colour indeces to be used to color plots points
-  return(cbind.data.frame(colrs,met,stringsAsFactors=FALSE))
-}
-
-t1<-unique(metadata3[,which(colnames(metadata3)=="histological_type")])
-
-t2<- unique(metadata3[,which(colnames(metadata3)=="histological_type")])
-
-smpclrs<-sampstr(metadata3,"histological_type")# This now has the correct number of samples
-
-
-stratification<-lapply(colnames(metadata3), function(x) sampstr(metadata3,x))# integers representing metadata classes for coloring of samples in the MDS plots
-names(stratification)<- colnames(metadata3)
 #################################################################################################################################################################################
 #network data
 #################################################################################################################################################################################
@@ -374,8 +318,177 @@ mutMatLogicalOrdered<- mutationMatrixLogical2[order(rownames(mutationMatrixLogic
 # The gene adjacency list for each gene mapping to the network.
 # Elements in each indicate an index position in the rownames(mutMatLogicalordered) representing an adjacent gene in the network.
 geneAdjIndex<-lapply(seq_len(length(geneNeighbourhoodsNames)), function(y) unlist(lapply(seq_len(length(geneNeighbourhoodsNames[[y]])), function(x) which(geneNeighbourhoodsNames[[y]][x]==rownames(mutMatLogicalOrdered)))))
-
+mutM<-mutMatLogicalOrdered
+geneAdj<-geneAdjIndex
 ################################################################################################################################
 ## run the network informed clustering function here to assign mutMatLogicalOrdered and geneAdjIndex to mutM and geneAdj.
 ################################################################################################################################
+#Metadata
+
+# variables required for the plot functions
+snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,mutationsSilentPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
+
+barplot(mutationsPerIndiv[order(mutationsPerIndiv, decreasing=TRUE)], border="gray")
+
+silentVsNonSilentRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
+#1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
+#2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
+indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
+
+
+#function to create the hypermutated metadata variable
+#rawdata is the scores object
+#mutTable is the mutations object
+#mutationMatrix is the mutM object
+#metadata is the metadata2 object
+getHypermutated<-function(rawdata,mutTable,mutationMatrix,metadata,ratio){
+  
+  silentMutations<-rawdata[which(rawdata$Variant_Classification=="Silent"),]
+  silentAndNonSilentMutations <-cbind(table(silentMutations$sampleID), table(mutTable$sampleID))
+  silentAndNonSilentMutations<-silentAndNonSilentMutations[order(silentAndNonSilentMutations[,2], decreasing=TRUE),]
+  hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(ratio>20),])# I need this because the names are ordered differently in 
+  hyperIndex<-match(hypermutatedSampleNames,colnames(mutationMatrix))
+  #hypermutated metadata variable
+  hypermutatedMetaData<-rownames(metadata)%in%hypermutatedSampleNames# hypermutated samples are identified in the metadata2 table using this variable
+  return(list(hyperIndex,hypermutatedMetaData))
+  #return(hyperIndex)
+}
+
+hyperMutatedMetaData<-getHypermutated(scores,mutations, mutM, metadata2,silentVsNonSilentRatio)[[2]]
+hyperIndex<-getHypermutated(scores,mutations, mutM, metadata2,silentVsNonSilentRatio)[[1]]
+
+metadata2<- cbind.data.frame(metadata2, hyperMutatedMetaData)#This needs to be put somewhere else and I need to get the variable typesusing typeof here and store it in a variable for later usage when I need to decide on statistical tests for comparisons between groups based on different metadata variables.
+#The metadata type variable I can use to assign the correct statistical test to contingency tables of the stratification variable based on one of the metadata variables such as hypermutation status.
+metadataType<-sapply(metadata2,typeof)
+
+#I need this to reassign all of the NA values to "[Not Available]" so that the which function in sampstr will work
+metadata3<-metadata2# in doing this, the metadata2 is no longer a dataframe with the correct data types.
+metadata3[is.na(metadata3)]<-"[Not Available]"
+
+sampstr<-function(metadata, variableName){
+  met<-metadata[,which(colnames(metadata)==variableName)]# the metadata variable
+  groups<-unique(metadata[,which(colnames(metadata)==variableName)])
+  colrs<-sapply(met, function(x) which(groups==x))# the colour indeces to be used to color plots points
+  return(cbind.data.frame(colrs,met,stringsAsFactors=FALSE))
+}
+
+t1<-unique(metadata3[,which(colnames(metadata3)=="histological_type")])
+
+t2<- unique(metadata3[,which(colnames(metadata3)=="histological_type")])
+
+smpclrs<-sampstr(metadata3,"histological_type")# This now has the correct number of samples
+
+
+stratification<-lapply(colnames(metadata3), function(x) sampstr(metadata3,x))# integers representing metadata classes for coloring of samples in the MDS plots
+names(stratification)<- colnames(metadata3)
+
+
+###########################################################################################################################################
+##load the network_informed_clusterring_function
+#can I do that using library()?
+
+
 ################################################################################################################################
+###PLOTTING FUNCTIONS
+################################################################################################################################
+# variables required for the plot functions
+snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,mutationsSilentPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
+
+barplot(mutationsPerIndiv[order(mutationsPerIndiv, decreasing=TRUE)], border="gray")
+
+silentVsNonSilentRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
+#1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
+#2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
+indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
+
+# plot functions
+mutFreqPlot<-function(freqData,indSNVratio, mutsPerIndiv){
+  #plot
+  par(mar=c(3,5,5,5))
+  barplot(t(freqData), col=c("blue", "red"),border=c("blue","red"), beside=FALSE,axisnames=FALSE, main= "non-silent mutation frequency and Indel:SNV ratio")# red = silent mutations and blue=nonsilent mutations
+  par(new=T)
+  #testing to see that the ordering of my stratification metadata for coloring plot points is correct.
+  #identical(rownames(freqData), rownames(metadata2)[order(mutationsPerIndiv,decreasing=TRUE)])
+  plot(indSNVratio, axes=F, pch=20,col=(stratification$vital_status[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.7,xlab="",ylab="") # a plot of the percentage of indels amongst all non-silent mutations
+  axis(4, pretty(c(0, max(indSNVratio))), pos= length(indSNVratio)+2)
+  mtext("mutation frequency per sample", side=2, line=0, adj=0.5, padj=-3.5)
+  mtext("ratio of indels to SNV mutations",side=4,line=0, adj=0.5, padj=2.5)
+  mtext("samples ordered by mutation frequency",side=1, adj=0.5,padj=2.0)
+  legend(0.8*length(indSNVratio),0.5, c("SNV","indel"), lty=c(1,1),lwd=c(2.5,2.5),col=c("blue","red"))
+}
+# I can further develop the function to produce the plots with SNV;Indel ration points colored according to a metadata variable group membership of my choosing. I just need a variable that is the metadata object with samples ordered according to the mutations perIndiv order of the samples. 
+
+plot1<- mutFreqPlot(snvIndelBarPlotPoints,indelSNVratio,mutationsPerIndiv)
+
+
+#######################################################################################################################
+## Plot mean number of mutations per gene per individual
+#######################################################################################################################
+
+
+#test<- tapply(mutations$sampleID, mutations[,c("Hugo_Symbol","sampleID")], length)
+
+#gives me the mutations per individual per gene. I can now split this across a factor
+mutsPerIndivPerGene<-as.matrix(table(mutations$sampleID,mutations$Hugo_Symbol))
+muts
+#meanMutsPerIndivPerGene<- sapply(seq(1:dim(mutsPerIndivPerGene)[2]), function(x) mean(mutsPerIndivPerGene[,x]))
+
+#converts a table Object to a matrix object
+tableToMatrix<- function(tableData){
+  data<-as.matrix(tableData)
+  class(data)<- "matrix"
+  return(data)
+}
+
+
+matrixMutsPerIndivPerGene<- tableToMatrix(mutsPerIndivPerGene)
+
+# Returns the mean number of mutations carried in each Individual for each gene.
+getPerGenePerSamp<- function(PerIndpGene){
+  #perIndivPerGene<-as.matrix(table(mutDataFrame$sampleID,mutDataFrame$Hugo_Symbol))
+  meanPerIndivPerGene<- sapply(seq(1:dim(PerIndpGene)[2]), function(x) mean(PerIndpGene[,x]))
+  return(meanPerIndivPerGene)
+}
+
+#test5<- getPerGenePerSamp(mutsPerIndivPerGene)#identical to meanMutsPerIndivPerGene
+
+stratMeanMutPIPG<-by(matrixMutsPerIndivPerGene, stratification$seqTech[,2], getPerGenePerSamp)# Using this I should simply be able to plug it in to getPerGenePerSamp
+#variables to order the mutations per individual per gene graph across chromosomes and bp
+maxMutPos<-tapply(mutations$Start_Position, mutations$Hugo_Symbol, max)
+geneChrNum<-mutations$Chr[match(ranksGenesTest,mutations$Hugo_Symbol)]
+
+
+
+plot(stratMeanMutPIPG[[1]], col=alpha(1,0.5), log="y")# The beginings of my plot according to sequencer Type
+points(stratMeanMutPIPG[[2]],col=alpha(2,0.5))
+
+
+##################################################################################################################
+########################## MDS plots
+
+# This is the code needed to generate the MDS plots the calulcation of t,u and v is dependent on the mutM variable and the previous loading ofthe functions contained within the network_informed_clustering function script.
+ 
+t<- countMatch1(mutM)
+#u<- compDiss(t[c(-178,-179,-156,-164),c(-178,-179,-156,-164)],1,mutM[,c(-178,-179,-156,-164)])
+u<- compDiss(t,1,mutM)
+
+v<-cmdscale(u,k=2, eig=TRUE)
+
+
+
+MDSplot<- function(mdsPoints,smplclrs,hyperMutIndex){
+  par(mar=c(5,5,5,25))
+  par(xpd=TRUE)
+  plot(mdsPoints$points[,1],mdsPoints$points[,2], pch = 19, col=alpha(smplclrs[,1],0.5), cex=1.2, cex.lab= 1.5, cex.main = 1.5, cex.axis=1.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
+  points(mdsPoints$points[hyperIndex,1], mdsPoints$points[hyperIndex,2],pch=1, cex = 1.9)
+  #legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
+  legend(0.72, max(v$points[,2]+0.009), c(unique(smplclrs[,2]),"hypermutated"), cex=1.5,pt.cex=1.2, pch=c(rep(19, length(unique(smplclrs[,2]))),1),col=c(seq_along(1:length(unique(smplclrs[,1]))),1))
+}
+
+for (i in seq(35,length(names(stratification)))){
+  pdf(paste(i,"_",names(stratification[i]),".pdf", sep=""), width=15, height=10)
+  MDSplot(v,stratification[[i]],hyperIndex)
+  dev.off()
+}
+##some of the stratification variables have NA values. Investigate this.
+MDSplot(v,stratification[[107]], hyperIndex)

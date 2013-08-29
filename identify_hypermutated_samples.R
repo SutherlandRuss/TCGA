@@ -9,46 +9,10 @@ abline(0,cor(mutationsPerIndiv[,2], mutationsSilentPerIndiv,method= "pearson"),c
 
 #barplot of SNV and indel frequency ordered by SNV frequency
 
-snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,mutationsSilentPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
-barplot(mutationsPerIndiv[order(mutationsPerIndiv, decreasing=TRUE)], border="gray")
-
-silentVsNonSilentRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
-#1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
-#2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
-indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
-
-
 #plotbycancerType
-snvIndelBarPlotPoints<-snvIndelBarPlotPoints[which(cancerType=="rectum"),]
-indelSNVratio<-indelSNVratio[which(cancerType=="rectum")]
-silentVsNonSilentRatio<-silentVsNonSilentRatio[which(cancerType=="rectum")]
-
-
-
-#plot
-par(mar=c(3,5,5,5))
-barplot(t(snvIndelBarPlotPoints), col=c("blue", "red"),border=c("blue","red"), beside=FALSE,axisnames=FALSE, main= "non-silent mutation frequency and Indel:SNV ratio")# red = silent mutations and blue=nonsilent mutations
-par(new=T)
-#testing to see that the ordering of my stratification metadata for coloring plot points is correct.
-#identical(rownames(snvIndelBarPlotPoints), rownames(metadata2)[order(mutationsPerIndiv,decreasing=TRUE)])
-plot(indelSNVratio, axes=F, pch=20,col=(stratification$vital_status[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.7,xlab="",ylab="") # a plot of the percentage of indels amongst all non-silent mutations
-axis(4, pretty(c(0, max(indelSNVratio))), pos= length(indelSNVratio)+2)
-mtext("mutation frequency per sample", side=2, line=0, adj=0.5, padj=-3.5)
-mtext("ratio of indels to SNV mutations",side=4,line=0, adj=0.5, padj=2.5)
-mtext("samples ordered by mutation frequency",side=1, adj=0.5,padj=2.0)
-legend(0.8*length(indelSNVratio),0.5, c("SNV","indel"), lty=c(1,1),lwd=c(2.5,2.5),col=c("blue","red"))
-length(which(silentVsNonSilentRatio>20))
-#hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
-# colnames(mutM) and rownames(silentAndNonSilentMutations)
-#mutMHMRemoved<- mutM[,-match(hypermutatedSampleNames,colnames(mutM))]# use this to generate new plots
-#hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
-
-#sampleColors[match(hypermutatedSampleNames, colnames(mutM))]<- "green" #
-
-
-
-#plotting the mutation frequency of each sample
-
+#snvIndelBarPlotPoints<-snvIndelBarPlotPoints[which(cancerType=="rectum"),]
+#indelSNVratio<-indelSNVratio[which(cancerType=="rectum")]
+#silentVsNonSilentRatio<-silentVsNonSilentRatio[which(cancerType=="rectum")]
 
 silentMutations<-scores[which(scores$Variant_Classification=="Silent"),]
 
@@ -56,12 +20,31 @@ silentAndNonSilentMutations <-cbind(table(silentMutations$sampleID), table(mutat
 silentAndNonSilentMutations<-silentAndNonSilentMutations[order(silentAndNonSilentMutations[,2], decreasing=TRUE),]
 hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
 hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
-#hypermutated metadata variable
-hypermutatedMetaData<-rownames(metadata2)%in%hypermutatedSampleNames# hypermutated samples are identified in the metadata2 table using this variable
-metadata2<- cbind.data.frame(metadata2, hypermutatedMetaData)#This needs to be put somewhere else and I need to get the variable typesusing typeof here and store it in a variable for later usage when I need to decide on statistical tests for comparisons between groups based on different metadata variables.
-metadataType<-sapply(metadata2,typeof)
-##reassign NA non-existent values to "[Not Available]".
-#metadata2[(is.na(metadata2)]<-"[Not Available]"
+
+#THE mutFreqPlot function at the bottom of the draft.package script.
+#par(mar=c(3,5,5,5))
+#barplot(t(snvIndelBarPlotPoints), col=c("blue", "red"),border=c("blue","red"), beside=FALSE,axisnames=FALSE, main= "non-silent mutation frequency and Indel:SNV ratio")# red = silent mutations and blue=nonsilent mutations
+#par(new=T)
+##testing to see that the ordering of my stratification metadata for coloring plot points is correct.
+##identical(rownames(snvIndelBarPlotPoints), rownames(metadata2)[order(mutationsPerIndiv,decreasing=TRUE)])
+#plot(indelSNVratio, axes=F, pch=20,col=(stratification$vital_status[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.7,xlab="",ylab="") # a plot of the percentage of indels amongst all non-silent mutations
+#axis(4, pretty(c(0, max(indelSNVratio))), pos= length(indelSNVratio)+2)
+#mtext("mutation frequency per sample", side=2, line=0, adj=0.5, padj=-3.5)
+#mtext("ratio of indels to SNV mutations",side=4,line=0, adj=0.5, padj=2.5)
+#mtext("samples ordered by mutation frequency",side=1, adj=0.5,padj=2.0)
+#legend(0.8*length(indelSNVratio),0.5, c("SNV","indel"), lty=c(1,1),lwd=c(2.5,2.5),col=c("blue","red"))
+#length(which(silentVsNonSilentRatio>20))
+##hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(silentVsNonSilentRatio>20),])# I need this because the names are ordered differently in 
+## colnames(mutM) and rownames(silentAndNonSilentMutations)
+##mutMHMRemoved<- mutM[,-match(hypermutatedSampleNames,colnames(mutM))]# use this to generate new plots
+##hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
+
+#sampleColors[match(hypermutatedSampleNames, colnames(mutM))]<- "green" #
+
+
+
+#plotting the mutation frequency of each sample
+
 
 
 plot(silentAndNonSilentMutations[,2], log="y", ylim=c(1, max(silentAndNonSilentMutations[,2])), col="red", pch=20,cex=0.5, xaxt="n",
