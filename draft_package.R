@@ -6,9 +6,9 @@ library(scales)
 # load network
 #########################################################################################################################
 
-network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
 #network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
-#network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
+network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
 network.file  <- paste0(network.name,".simple")
@@ -16,8 +16,8 @@ network.file  <- paste0(network.name,".simple")
 ##load seq data
 ##########################################################################################################################
 # The data file in vcf-like format.
-#scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 #scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.file <- "colorectalcancer.maf"
@@ -28,14 +28,14 @@ scores.file <- "colorectalcancer.maf"
 ###########################################################################################################################
 
 #The basename for the clinical files
-colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+#colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 #colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-#colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 
 #The basename for the rectal clinical files
-rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+#rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 #rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-#rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 
 ############################################################################################################################
 #loading metadata
@@ -113,8 +113,8 @@ clinicalDataTable<- function(rectumClinical.path){
 # function to combine metadata tables and ensures that variables remain in the correct order so that columns match netween the two joined tables
 combineMetadata<- function(table1,table2){
   table1<-table1[,order(match(colnames(table1), colnames(table2)))]
-  combinedT<-t(rbind(table1,table2))
-  colnames(combinedT)<-combinedT[1,]
+  combinedT<-as.data.frame(rbind(table1,table2), stringsAsFactors=FALSE)
+  rownames(combinedT)<-combinedT[,1]
   return(combinedT)
 }
 
@@ -158,7 +158,7 @@ createScoreTable<- function(dataFile){
 
 scores<-createScoreTable(dataFile)
 scoresSamples<- unique(scores$sampleID)
-intersectSamples<-(intersect(scoresSamples,colnames(colorectal)))
+intersectSamples<-(intersect(scoresSamples,rownames(colorectal)))
 
 extractIntersectSamples<- function(dataNames,intersectList,data){
   if(class(dataNames)!= "character"||class(intersectList)!="character"){
@@ -174,8 +174,8 @@ scores<-extractIntersectSamples(scores$sampleID,intersectSamples,scores)# this p
 scores<- scores[order(scores$sampleID),]
 
 #the metadata must be a matrix
-metadata2<-t(extractIntersectSamples(rownames(t(colorectal)), intersectSamples, t(colorectal)))# this produced the same result as in the original code but much faster
-metadata2<- metadata2[,order(colnames(metadata2))]# the colnames(sampleIDS) are in the same order as in seqTech, cancerType and the sampleID variable of scores. Everything is now in the same order
+metadata2<-extractIntersectSamples(rownames(colorectal), intersectSamples, colorectal)# this produced the same result as in the original code but much faster
+metadata2<- metadata2[order(rownames(metadata2)),]# the rownames(sampleIDS) are in the same order as in seqTech, cancerType and the sampleID variable of scores. Everything is now in the same order
 #metadata_tab2<-cbind(metadata_tab,extractSamples(seqTech[,2],colnames(metadata), seqTech[,1]))
 ## I need to check that this new variable is the same as the metadata_tab table, to make sure the above fuinction is working. Once I know it is working I can delete the other code and supplement it with the function.
 #identical(metadata_tab[,!c(105,106)],metadata_tab2[,!c(105,106,107)])# the two dataframes are identical and the matrices match back to the metadata matrix. I should use metadata_tab2 as the basis for my analysis.
@@ -263,7 +263,7 @@ seqTech<- seqTech[order(seqTech[,2], decreasing = FALSE),]
 cancerType<-unique(cbind(mutations$Cancer_type,as.character(mutations$sampleID)))
 cancerType<- cancerType[order(cancerType[,2], decreasing = FALSE),]
 
-metadata2<-rbind(metadata2, cancerType=cancerType[,1], seqTech=seqTech[,1])# adds the cancerType and seqTech metadata to the metadata object
+metadata2<-cbind.data.frame(metadata2, cancerType=cancerType[,1], seqTech=seqTech[,1], stringsAsFactors=FALSE)# adds the cancerType and seqTech metadata to the metadata object
 
 # The matrix of "non-silent mutations"
 #mutations<-scores[which(scores$Variant_Classification!="Silent"),]
@@ -292,24 +292,26 @@ colnames(mutationMatrixLogical)<- colnames(mutationTable)
 
 #Begin again from here tomorrow. runcreate metadata and then this script
 ######################################################################################################################################
-
-
-
+#I need this to reassign all of the NA values to "[Not Available]" so that the which function in sampstr will work
+metadata3<-metadata2# in doing this, the metadata2 is no longer a dataframe with the correct data types.
+metadata3[is.na(metadata3)]<-"[Not Available]"
 
 sampstr<-function(metadata, variableName){
-  met<-metadata[which(rownames(metadata)==variableName),]# the metadata variable
-  groups<-unique(metadata[which(rownames(metadata)==variableName),])
+  met<-metadata[,which(colnames(metadata)==variableName)]# the metadata variable
+  groups<-unique(metadata[,which(colnames(metadata)==variableName)])
   colrs<-sapply(met, function(x) which(groups==x))# the colour indeces to be used to color plots points
-  return(cbind(colrs,met))
+  return(cbind.data.frame(colrs,met,stringsAsFactors=FALSE))
 }
 
-t1<-metadata2[which(rownames(metadata2)=="histological_type"),]
-t2<- unique(metadata2[which(rownames(metadata2)=="histological_type"),])
-smpclrs<-sampstr(metadata2,"histological_type")# This now has the correct number of samples
+t1<-unique(metadata3[,which(colnames(metadata3)=="histological_type")])
+
+t2<- unique(metadata3[,which(colnames(metadata3)=="histological_type")])
+
+smpclrs<-sampstr(metadata3,"histological_type")# This now has the correct number of samples
 
 
-stratification<-lapply(rownames(metadata2), function(x) sampstr(metadata2,x))# integers representing metadata classes for coloring of samples in the MDS plots
-names(stratification)<- rownames(metadata2)
+stratification<-lapply(colnames(metadata3), function(x) sampstr(metadata3,x))# integers representing metadata classes for coloring of samples in the MDS plots
+names(stratification)<- colnames(metadata3)
 #################################################################################################################################################################################
 #network data
 #################################################################################################################################################################################
