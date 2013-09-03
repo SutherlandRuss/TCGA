@@ -6,9 +6,9 @@ library(scales)
 # load network
 #########################################################################################################################
 
-network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
 #network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
-#network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
+network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
 network.file  <- paste0(network.name,".simple")
@@ -16,8 +16,8 @@ network.file  <- paste0(network.name,".simple")
 ##load seq data
 ##########################################################################################################################
 # The data file in vcf-like format.
-#scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 #scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.file <- "colorectalcancer.maf"
@@ -28,30 +28,32 @@ scores.file <- "colorectalcancer.maf"
 ###########################################################################################################################
 
 #The basename for the clinical files
-colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+#colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 #colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-#colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 
 #The basename for the rectal clinical files
-rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+#rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 #rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-#rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 
 
 # The basenamefor the breast cancer clinical files
-breastClinical.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Clinical/Biotab/"
+#breastClinical.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Clinical/Biotab/"
+breastClinical.path<-"/Users/Russ/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Clinical/Biotab/"
+
 ############################################################################################################################
 #loading metadata
 ############################################################################################################################
 
-clinical.files <- list.files(colonClinical.path, full.names = TRUE)
-names(clinical.files) <- basename(clinical.files)
+#clinical.files <- list.files(colonClinical.path, full.names = TRUE)
+#names(clinical.files) <- basename(clinical.files)
 
-colonClinicalTables <- lapply(clinical.files, read.table, header=TRUE,as.is =TRUE, sep = "\t", quote = "", stringsAsFactors = FALSE, na.strings=c("NA","[Not Available]"))
+#colonClinicalTables <- lapply(clinical.files, read.table, header=TRUE,as.is =TRUE, sep = "\t", quote = "", stringsAsFactors = FALSE, na.strings=c("NA","[Not Available]"))
 
 
 
-clinicalDataTable<- function(rectumClinical.path){
+clinicalDataTable<- function(rectumClinical.path, tumourLabel){
   #the names of the rectumClinical files
   rectumClinical.files<- list(list.files(rectumClinical.path))
   rectumClinicalTables<- lapply(seq(1:length(rectumClinical.files[[1]])), function(x) cbind(read.table(file.path(rectumClinical.path,rectumClinical.files[[1]][x]) , header=TRUE, sep = "\t", quote = "", stringsAsFactors = FALSE, na.strings=c("NA", "[Not Available]"))))
@@ -61,9 +63,12 @@ clinicalDataTable<- function(rectumClinical.path){
   #variables for the table
   TablesForTable<- which(sapply(rectumClinicalTablesSamples, function(x)length(x[[1]]))==3)
   #modified table list based on the data in tables with duplicate SampleIDs. ommitted tables are not needed, drug table may be included at a later date.
-  TablesForTable<- TablesForTable[-c(3,6,8)]# This needs to be changed manually
-  #TablesForTable<-TablesForTable[-c(2,5,7)]# for breast cancer
   
+  if(tumourLabel!="breast"){
+  #TablesForTable<- TablesForTable[-c(3,6,8)]# This needs to be changed manually
+  }else{
+    TablesForTable<-TablesForTable[-c(2,5,7)]# for breast cancer
+  }
   #Identify the tables which use individual IDs as opposed to tissue sample ids which can come from the same patient.
   rectumClinicalTablesSamples<-lapply(seq(1:length(TablesForTable)),function(x) rectumClinicalTablesSamples[[TablesForTable[x]]])
   #get the appropriate Clinical Tables
@@ -104,7 +109,7 @@ clinicalDataTable<- function(rectumClinical.path){
   #The join_all function acts like a mysql join, to combine all of the listed tables based on matching "sampleIds" variables.
   clinicalData<- join_all(rectumClinicalTables, by="SampleIds", type="full", match="first")
   #disease type matrix
-  tumourType<- matrix("rectum", ncol=1, nrow=length(clinicalData[,1]))
+  tumourType<- matrix(tumourLabel, ncol=1, nrow=length(clinicalData[,1]))
   # Add disease identifier to the clinicalData
   #no factors at this point
   clinicalData<-data.frame(clinicalData,tumourType, stringsAsFactors=FALSE)
@@ -116,6 +121,9 @@ clinicalDataTable<- function(rectumClinical.path){
 
 # function to combine metadata tables and ensures that variables remain in the correct order so that columns match netween the two joined tables
 combineMetadata<- function(table1,table2){
+  commonVariables<-intersect(colnames(table1), colnames(table2))
+  table1<- table1[,commonVariables]
+  table2<- table2[,commonVariables]
   table1<-table1[,order(match(colnames(table1), colnames(table2)))]
   combinedT<-as.data.frame(rbind(table1,table2), stringsAsFactors=FALSE)
   rownames(combinedT)<-combinedT[,1]
@@ -123,10 +131,14 @@ combineMetadata<- function(table1,table2){
 }
 
 
+
+
+
 #load colon and rectum data
-colon<-clinicalDataTable(colonClinical.path)
-rectum<-clinicalDataTable(rectumClinical.path)
-breast<- clinicalDataTable(breastClinical.path)
+colon<-clinicalDataTable(colonClinical.path, "colon")
+rectum<-clinicalDataTable(rectumClinical.path,"rectum")
+breast<- clinicalDataTable(breastClinical.path,"breast")
+
 # order the colon columns the same way as they rectum columns
 #colon<-colon[,order(match(colnames(colon),colnames(rectum)))]
 #colorectal<- t(rbind(colon,rectum))# my metadata table to combine with the genescores data
@@ -134,7 +146,9 @@ breast<- clinicalDataTable(breastClinical.path)
 
 #combine the colon and rectum metadata tables
 colorectal<- combineMetadata(colon,rectum)
-breastColorectal<-combineMetadata(colorectal,breast)
+
+colorectalBreast<-combineMetadata(colorectal,breast)
+colorectal<-colorectalBreast
 
 #colorectal<-as.data.frame(colorectal) I don't need this to be a datframe 
 
@@ -143,6 +157,7 @@ breastColorectal<-combineMetadata(colorectal,breast)
 #####################################################################################################################################################################
 
 dataFile<-file.path(scores.path,scores.file)
+breastFile<-file.path(breast.path,breast.file)
 
 
 #The function to read the data in to the scores table
@@ -163,6 +178,19 @@ createScoreTable<- function(dataFile){
 }
 
 scores<-createScoreTable(dataFile)
+breastScores<-createScoreTable(breastFile) 
+
+#function to label specific cancer samples accordign to their particular type of cancer
+labelCancer<- function(scores,label){
+  Cancer_type<-rep(label, length(scores[,1]))
+  labelledScores<-cbind.data.frame(Cancer_type,scores)
+  return(labelledScores)
+}
+
+breastScores<-labelCancer(breastScores,"breast")
+colorectalBreastScores<- rbind.data.frame(colorectalScores,breastScores)
+scores<- colorectalBreastScores
+
 scoresSamples<- unique(scores$sampleID)
 intersectSamples<-(intersect(scoresSamples,rownames(colorectal)))
 
@@ -360,9 +388,46 @@ getHypermutated<-function(rawdata,mutTable,mutationMatrix,metadata,ratio){
   #return(hyperIndex)
 }
 
+
+
+
+
 hyperMutatedMetaData<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[2]]
 hyperIndex<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[1]]
+##for 2nd september#############################
+#check that this works tomorrow I'm pretty sure it works because I get good MDS plots
+#
+#
+#getHypermutated2<-function(rawdata,mutTables,mutationMatrix,metadata,ratio){
+#  silentMutations<-rawdata[which(rawdata$Variant_Classification=="Silent"),]
+#  MutationSamples<- unique(mutTables$sampleID)
+#  silentMutSamples<- data.frame(rep(0,length(MutationSamples)), stringsAsFactors=FALSE)
+#  
+#  silentMutationTable<-table(silentMutations$sampleID)
+  #silentMutSamples2<-silentMutSamples
+#  
+#  rownames(silentMutSamples2)<-MutationSamples
+#  silentMutSamples2[match(names(silentMutationTable), rownames(silentMutSamples2)),1] <- silentMutationTable
+  
+  
+#  silentAndNonSilentMutations <-cbind(silentMutSamples2, table(mutTables$sampleID))
+#  silentAndNonSilentMutations<-silentAndNonSilentMutations[order(silentAndNonSilentMutations[,3], decreasing=TRUE),-2]
+#  hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(ratio>20),])# I need this because the names are ordered differently in 
+#  hyperIndex<-match(hypermutatedSampleNames,colnames(mutationMatrix))
+#  hypermutatedMetaData<-rownames(metadata)%in%hypermutatedSampleNames# hypermutated samples are identified in the metadata2 table using this variable
+  #hypermutated metadata2 variable
+#  return(list(hyperIndex,hypermutatedMetaData))
+#  
+#}
 
+
+
+
+#ßhyperMutatedMetaData<-getHypermutated2(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[2]]
+
+#hyperIndex<-getHypermutated2(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[1]]
+
+###########################
 metadata2<- cbind.data.frame(metadata2, hyperMutatedMetaData)#This needs to be put somewhere else and I need to get the variable typesusing typeof here and store it in a variable for later usage when I need to decide on statistical tests for comparisons between groups based on different metadata variables.
 #The metadata type variable I can use to assign the correct statistical test to contingency tables of the stratification variable based on one of the metadata variables such as hypermutation status.
 metadataType<-sapply(metadata2,typeof)
@@ -497,4 +562,4 @@ for (i in seq(35,length(names(stratification)))){
   dev.off()
 }
 ##some of the stratification variables have NA values. Investigate this.
-MDSplot(v,stratification[[107]], hyperIndex)
+MDSplot(v,stratification$tumourType, hyperIndex)
