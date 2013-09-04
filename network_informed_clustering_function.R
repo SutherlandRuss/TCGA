@@ -135,7 +135,7 @@ jaccardSim<- function(mutM){
 #compute the dissimilarity matrix
 compDiss<-function(countM, type, mutM){
   if(type==1){
-    distM<- as.dist(1-countM/max(countM, na.rm=TRUE)) 
+    distM<- as.dist(1-countM/(max(countM, na.rm=TRUE)+1)) 
   }else if(type==2){
     distM<- as.dist(max(countM, na.rm =TRUE)-countM)
   }#add in jaccards similarity here

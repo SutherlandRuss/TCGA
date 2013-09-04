@@ -7,8 +7,8 @@ library(scales)
 #########################################################################################################################
 
 #network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-#network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
-network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
+network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
+#network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
 network.file  <- paste0(network.name,".simple")
@@ -16,12 +16,20 @@ network.file  <- paste0(network.name,".simple")
 ##load seq data
 ##########################################################################################################################
 # The data file in vcf-like format.
-scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 #scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-#scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.file <- "colorectalcancer.maf"
 #scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
+
+#breast.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
+breast.path<-"C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
+
+breast.file<- "genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.maf"
+
+
+
 
 ###########################################################################################################################
 #load metadata
@@ -29,18 +37,19 @@ scores.file <- "colorectalcancer.maf"
 
 #The basename for the clinical files
 #colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-#colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+#colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 
 #The basename for the rectal clinical files
 #rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-#rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+#rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 
 
 # The basenamefor the breast cancer clinical files
 #breastClinical.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Clinical/Biotab/"
-breastClinical.path<-"/Users/Russ/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Clinical/Biotab/"
+breastClinical.path<-"C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Clinical/Biotab/"
+#breastClinical.path<-"/Users/Russ/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Clinical/Biotab/"
 
 ############################################################################################################################
 #loading metadata
@@ -188,7 +197,7 @@ labelCancer<- function(scores,label){
 }
 
 breastScores<-labelCancer(breastScores,"breast")
-colorectalBreastScores<- rbind.data.frame(colorectalScores,breastScores)
+colorectalBreastScores<- rbind.data.frame(scores,breastScores)
 scores<- colorectalBreastScores
 
 scoresSamples<- unique(scores$sampleID)
@@ -543,6 +552,7 @@ t<- countMatch1(mutM)
 #u<- compDiss(t[c(-178,-179,-156,-164),c(-178,-179,-156,-164)],1,mutM[,c(-178,-179,-156,-164)])
 u<- compDiss(t,1,mutM)
 
+u.mds<- isoMDS(u,k=2, max=1000, tol=1e-5)
 v<-cmdscale(u,k=2, eig=TRUE)
 
 
@@ -563,3 +573,6 @@ for (i in seq(35,length(names(stratification)))){
 }
 ##some of the stratification variables have NA values. Investigate this.
 MDSplot(v,stratification$tumourType, hyperIndex)
+
+u.mds<- isoMDS(u,k=2, max=1000, tol=1e-5)
+plot(u.mds$points,col=alpha(stratification[[147]][,1],0.5),pch=19)
