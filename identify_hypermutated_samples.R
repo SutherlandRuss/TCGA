@@ -166,12 +166,17 @@ genesBySequencer<-table(mutations$Hugo_Symbol,mutations$Sequencer)
 
 ##hypermutation tables
 #metadata3<-as.data.frame(t(metadata2),stringsAsFactors=FALSE)
-hyperMutTB<-lapply(seq(1:length(colnames(metadata2))), function(x) table(metadata2[,x], metadata2$hypermutatedMetaData))
+hyperMutTB<-lapply(seq(1:dim(metadata2)[2]), function(x) table(metadata2[,x], metadata2$hyperMutatedMetaData))
 names(hyperMutTB)<- colnames(metadata2)
 
+stratification$microsatellite_instability[stratification$microsatellite_instability=="[Not Available]"]<- NA
+stratification$loss_expression_of_mismatch_repair_proteins_by_ihc_result[stratification$loss_expression_of_mismatch_repair_proteins_by_ihc_result=="[Not Available]"]<- NA
+which(stratification$loss_expression_of_mismatch_repair_proteins_by_ihc_result[,2]==NA)
 #To find statistical difference between the hypermutated samples and non-hypermutated samples I now need to use Fisher's test for 2*2 contingency tables and chi-square for anything else.For scale data neither is appropriate and I should use a T-test instead
-table(stratification$hypermutatedMetaData[,2],stratification$microsatellite_instability[,2])
-fisher.test(table(stratification$hypermutatedMetaData[,2],stratification$microsatellite_instability[,2]))
+table(stratification$hyperMutatedMetaData[,2],stratification$microsatellite_instability[,2])
+fisher.test(table(stratification$hyperMutatedMetaData[,2],stratification$microsatellite_instability[,2]))
+fisher.test(table(stratification$vital_status[,2],stratification$microsatellite_instability[,2]))
+fisher.test(table(stratification$vital_status[,2],stratification$hyperMutatedMetaData[,2]))
 
 
 #testforsequencer bias
