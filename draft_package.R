@@ -8,9 +8,9 @@ library(cluster)
 # load network
 #########################################################################################################################
 
-#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
 #network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
-network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
+#network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
 network.file  <- paste0(network.name,".simple")
@@ -18,16 +18,16 @@ network.file  <- paste0(network.name,".simple")
 ##load seq data
 ##########################################################################################################################
 # The data file in vcf-like format.
-scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+#scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 #scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.file <- "colorectalcancer.maf"
 #scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
 
-#breast.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
+breast.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
 #breast.path<-"C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
-breast.path<-"/Users/Russ/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
+#breast.path<-"/Users/Russ/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
 
 breast.file<- "genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.maf"
 
@@ -39,14 +39,14 @@ breast.file<- "genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.
 ###########################################################################################################################
 
 #The basename for the clinical files
-#colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 #colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+#colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 
 #The basename for the rectal clinical files
-#rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 #rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+#rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 
 
 # The basenamefor the breast cancer clinical files
@@ -499,12 +499,13 @@ mutFreqPlot<-function(freqData,indSNVratio, mutsPerIndiv){
   par(new=T)
   #testing to see that the ordering of my stratification metadata for coloring plot points is correct.
   #identical(rownames(freqData), rownames(metadata2)[order(mutationsPerIndiv,decreasing=TRUE)])
-  plot(indSNVratio, axes=F, pch=20,col=(stratification$vital_status[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.7,xlab="",ylab="") # a plot of the percentage of indels amongst all non-silent mutations
+  plot(indSNVratio, axes=F, pch=20,col=(stratification$hyperMutatedMetaData[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.8,xlab="",ylab="", cex.axis=1.2) # a plot of the ratio of indels amongst all non-silent mutations
+  #plot(indSNVratio, axes=F, pch=20,col=(stratification$vital_status[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.8,xlab="",ylab="", cex.axis=1.2) # a plot of the percentage of indels amongst all non-silent mutations
   axis(4, pretty(c(0, max(indSNVratio))), pos= length(indSNVratio)+2)
-  mtext("mutation frequency per sample", side=2, line=0, adj=0.5, padj=-3.5)
-  mtext("ratio of indels to SNV mutations",side=4,line=0, adj=0.5, padj=2.5)
-  mtext("samples ordered by mutation frequency",side=1, adj=0.5,padj=2.0)
-  legend(0.8*length(indSNVratio),0.5, c("SNV","indel"), lty=c(1,1),lwd=c(2.5,2.5),col=c("blue","red"))
+  mtext("mutation frequency per sample", side=2, line=0, adj=0.5, padj=-3.5, cex=1.2)
+  mtext("ratio of indels to SNV mutations",side=4,line=0, adj=0.5, padj=2.5, cex=1.2)
+  mtext("samples ordered by mutation frequency",side=1, adj=0.5,padj=2.0, cex= 1.2)
+  legend(0.75*length(indSNVratio),0.5, c("SNV","indel", "non-hyper", "hyper"), lty=c(1,1,NA,NA),lwd=c(2.5,2.5,NA,NA),pch=c(NA,NA,20,20),col=c("blue","red","black","red"), text.font=1.5)
 }
 # I can further develop the function to produce the plots with SNV;Indel ration points colored according to a metadata variable group membership of my choosing. I just need a variable that is the metadata object with samples ordered according to the mutations perIndiv order of the samples. 
 
@@ -571,18 +572,19 @@ MDSplot<- function(mdsPoints,smplclrs,hyperMutIndex){
   par(mar=c(5,5,5,25))
   par(xpd=TRUE)
   plot(mdsPoints$points[,1],mdsPoints$points[,2], pch = 19, col=alpha(smplclrs[,1],0.5), cex=1.2, cex.lab= 1.5, cex.main = 1.5, cex.axis=1.5, xlab="principal co-ordinate 1", ylab="principal co-ordinate 2", main ="mds pco plot of colorectal cancer samples \n before network processing of mutation matrix")
-  points(mdsPoints$points[hyperIndex,1], mdsPoints$points[hyperIndex,2],pch=1, cex = 1.9)
+  points(mdsPoints$points[hyperIndex,1], mdsPoints$points[hyperIndex,2],pch=1, cex = 2.0)
   #legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
   legend(0.72, max(v$points[,2]+0.009), c(unique(smplclrs[,2]),"hypermutated"), cex=1.5,pt.cex=1.2, pch=c(rep(19, length(unique(smplclrs[,2]))),1),col=c(seq_along(1:length(unique(smplclrs[,1]))),1))
 }
 
 for (i in seq(35,length(names(stratification)))){
-  pdf(paste(i,"_",names(stratification[i]),".pdf", sep=""), width=15, height=10)
+  png(paste(i,"_",names(stratification[i]),".png", sep=""), width=1000, height=600)
   MDSplot(v,stratification[[i]],hyperIndex)
   dev.off()
 }
-##some of the stratification variables have NA values. Investigate this.
-MDSplot(v,stratification$hyperMutatedMetaData, hyperIndex)
+
+#setwd("C:/Users/rds/Dropbox/PhD/tumour_classifier_data/analysis/colorectal cancer/combined/MDS/images")
+MDSplot(v,stratification$cancerType, hyperIndex)
 
 v.pam<-pam(v$points,2)
 plot(v$points,col=alpha(stratification$hyperMutatedMetaData[,1],0.5),pch=19)

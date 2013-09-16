@@ -47,11 +47,11 @@ hyperIndex<-match(hypermutatedSampleNames,colnames(mutM))
 
 
 
-plot(silentAndNonSilentMutations[,2], log="y", ylim=c(1, max(silentAndNonSilentMutations[,2])), col="red", pch=20,cex=0.5, xaxt="n",
-     main="total number of mutations per sample \n ordered from largest to smallest number of non-silent mutations")
-points(silentAndNonSilentMutations[,1], col="blue", pch=20, cex=0.5)
-axis(1,at=1:length(dimnames(silentAndNonSilentMutations)[[1]]), labels=(dimnames(silentAndNonSilentMutations)[[1]][1:length(dimnames(silentAndNonSilentMutations)[[1]])]), las=2, cex.axis=0.3)
-legend(240,3000,c("non-silent mutations","silent mutations"),cex=1, pch=20, col=c("red","blue"))
+plot(silentAndNonSilentMutations[,2], log="y", ylim=c(1, max(silentAndNonSilentMutations[,2])), col="red", pch=20,cex=0.8,cex.main=1.6, cex.lab=1.5,cex.axis = 1.5, xaxt="n",
+     main="total number of mutations per sample \n ordered from largest to smallest number of non-silent mutations",ylab="log number of mutations")
+points(silentAndNonSilentMutations[,1], col="blue", pch=20, cex=0.8)
+axis(1,at=1:length(dimnames(silentAndNonSilentMutations)[[1]]),labels=(dimnames(silentAndNonSilentMutations)[[1]][1:length(dimnames(silentAndNonSilentMutations)[[1]])]), las=2, cex.axis=0.3)
+legend(220,3000,c("non-silent mutations","silent mutations"),cex=1.1, pch=20, col=c("red","blue"))
 
 silentMutationsForPlot<-sort(table(silentMutations$sampleID), decreasing=TRUE)
 mutationsForPlot<- sort(table(mutations$sampleID), decreasing=TRUE)#identifying the hypermutated samples.
