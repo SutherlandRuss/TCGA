@@ -19,10 +19,11 @@ network.file  <- paste0(network.name,".simple")
 ##########################################################################################################################
 # The data file in vcf-like format.
 #scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
 #scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
-scores.file <- "colorectalcancer.maf"
+scores.files<-unlist(list.files(scores.path))
+#scores.files <- "colorectalcancer.maf"
 #scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
 
 breast.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
@@ -39,12 +40,12 @@ breast.file<- "genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.
 ###########################################################################################################################
 
 #The basename for the clinical files
-colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/colon/Clinical/Biotab/"
 #colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 #colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
 
 #The basename for the rectal clinical files
-rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/rectum/Clinical/Biotab"
 #rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 #rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 
@@ -168,8 +169,7 @@ colorectal<-colorectalBreast
 ##loading seqdata
 #####################################################################################################################################################################
 
-dataFile<-file.path(scores.path,scores.file)
-breastFile<-file.path(breast.path,breast.file)
+dataFiles<-file.path(scores.path,scores.files)
 
 
 #The function to read the data in to the scores table
@@ -189,28 +189,50 @@ createScoreTable<- function(dataFile){
   return(scores)
 }
 
-scores<-createScoreTable(dataFile)
-breastScores<-createScoreTable(breastFile) 
+
+scores<-lapply(dataFiles, function(x) createScoreTable(x))
+#scores<- rbind.data.frame(scores[[1]],scores[[2]])
+
+#scores<-createScoreTable(dataFile)
+#breastScores<-createScoreTable(breastFile) 
 
 
 #analyse according to sequencer.
-scores.illumina<-scores[which(scores$Sequencer=="Illumina HiSeq"),]
-scores.solid<-scores[-which(scores$Sequencer=="Illumina HiSeq"),]
+#scores.illumina<-scores[which(scores$Sequencer=="Illumina HiSeq"),]
+#scores.solid<-scores[-which(scores$Sequencer=="Illumina HiSeq"),]
 
-scores<- scores.illumina
+#scores<- scores.illumina
 
 #function to label specific cancer samples accordign to their particular type of cancer
-labelCancer<- function(scores,label){
-  Cancer_type<-rep(label, length(scores[,1]))
-  labelledScores<-cbind.data.frame(Cancer_type,scores)
-  return(labelledScores)
+labelCancer<- function(scores,files){
+  
+  cancers<- sapply(seq(1:length(files)), function(x)unlist(strsplit(files[[x]],"[.]"))[1])
+  cancer_type <- lapply(seq(1:length(files)), function(x) rep(cancers[x], length(scores[[x]][,1])))
+  lScores<- lapply(seq(1:length(files)), function(x) cbind.data.frame(cancer_type=cancer_type[[x]],scores[[x]]))# when i leave out the cancer label this table is identical to scores. can I put it in to a for loop instead of a series of lapply and sapply?
+  
+  return(lScores)
 }
 
-breastScores<-labelCancer(breastScores,"breast")
-colorectalBreastScores<- rbind.data.frame(scores,breastScores)
-scores<- colorectalBreastScores
+scores<-labelCancer(scores,scores.files)
+scores<- rbind.data.frame(scores[[1]],scores[[2]])
 
-scoresSamples<- unique(scores$sampleID)
+#silent mutations
+scores.silent<-scores[which(scores$Variant_Classification=="Silent"),]
+
+scores<-scores[which(scores$Variant_Classification!="Silent"),]
+
+
+#ScoresTest<-labelCancer(scores,"test")
+#colorectalBreastScores<- rbind.data.frame(scores,breastScores)
+#scores<- colorectalBreastScores
+
+
+
+
+scoresSamples<- unique(scores$sampleID)# I need to remove the samples containing 0 silent mutations
+scores.silentSamples<- unique(scores.silent$sampleID)
+scores.silent.intersectSamples<-intersect(scoresSamples,scores.silentSamples)
+
 intersectSamples<-(intersect(scoresSamples,rownames(colorectal)))
 
 extractIntersectSamples<- function(dataNames,intersectList,data){
@@ -222,6 +244,10 @@ extractIntersectSamples<- function(dataNames,intersectList,data){
       return(NewSeqInfo)
     }
 }
+
+
+scores1<- extractIntersectSamples(scores$sampleID,)
+
 
 scores<-extractIntersectSamples(scores$sampleID,intersectSamples,scores)# this produces the same result as in the original code, but much faster
 scores<- scores[order(scores$sampleID),]
@@ -250,11 +276,12 @@ colnames(mutations)<- colnames(scores)
 
 
 
-
 # nonsilent mutations per individual
 mutationsTypePerIndiv<-table(mutations$Variant_Classification, mutations$sampleID)
-mutationsSilentPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[1:4,x]))
+mutationsSilentPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[c(3,4,6,7),x]))# the columns chosen change depending on which dataset you use, pre-may 2013 or post may 2013
 names(mutationsSilentPerIndiv)<-colnames(mutationsTypePerIndiv)
+mutationsSNVPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[c(9,10,12),x]))# number of SNVs per Indiv
+names(mutationsSNVPerIndiv)<-colnames(mutationsTypePerIndiv)
 
 #mutationsPerIndiv <-aggregate(mutations[,1], by=list(mutations$sampleID), length)
 #mutationsPerGene <-aggregate(mutations[,1], by=list(mutations$Hugo_Symbol), length)
@@ -265,6 +292,7 @@ names(mutationsSilentPerIndiv)<-colnames(mutationsTypePerIndiv)
 mutationsPerIndiv <-tapply(mutations$Hugo_Symbol, mutations$sampleID,length)
 mutationsPerGene <-tapply(mutations$sampleID, mutations$Hugo_Symbol,length)
 
+
 ##################################################################################################################################################################################
 ##################################################################################################################################################################################
 
@@ -274,7 +302,7 @@ mutationsPerGene <-tapply(mutations$sampleID, mutations$Hugo_Symbol,length)
 seqTech<-unique(cbind(mutations$Sequencer,as.character(mutations$sampleID)))
 seqTech<- sub(" ","", seqTech)
 seqTech<- seqTech[order(seqTech[,2], decreasing = FALSE),]
-cancerType<-unique(cbind(mutations$Cancer_type,as.character(mutations$sampleID)))
+cancerType<-unique(cbind(mutations$cancer_type,as.character(mutations$sampleID)))
 cancerType<- cancerType[order(cancerType[,2], decreasing = FALSE),]
 
 metadata2<-cbind.data.frame(metadata2, cancerType=cancerType[,1], seqTech=seqTech[,1], stringsAsFactors=FALSE)# adds the cancerType and seqTech metadata to the metadata object
