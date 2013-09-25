@@ -8,9 +8,9 @@ library(cluster)
 # load network
 #########################################################################################################################
 
-network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
 #network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
-#network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
+network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
 network.file  <- paste0(network.name,".simple")
@@ -18,19 +18,19 @@ network.file  <- paste0(network.name,".simple")
 ##load seq data
 ##########################################################################################################################
 # The data file in vcf-like format.
-#scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
-scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
+scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
+#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
 #scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 scores.files<-unlist(list.files(scores.path))
 #scores.files <- "colorectalcancer.maf"
 #scores.file <- basename("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined/colorectalcancer.maf")
 
-breast.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
+#breast.path<-"C:/Users/rds/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
 #breast.path<-"C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
 #breast.path<-"/Users/Russ/Dropbox/PhD/tumour_classifier_data/BRCA_breast_cancer/Somatic_Mutations/WUSM__IlluminaGA_DNASeq/Level_2"
 
-breast.file<- "genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.maf"
+#breast.file<- "genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.maf"
 
 
 
@@ -40,14 +40,14 @@ breast.file<- "genome.wustl.edu__Illumina_Genome_Analyzer_DNA_Sequencing_level2.
 ###########################################################################################################################
 
 #The basename for the clinical files
-colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/colon/Clinical/Biotab/"
+#colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/colon/Clinical/Biotab/"
 #colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
-#colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/colon/Clinical/Biotab/"
 
 #The basename for the rectal clinical files
-rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/rectum/Clinical/Biotab"
+#rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/rectum/Clinical/Biotab"
 #rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
-#rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
+rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/rectum/Clinical/Biotab"
 
 
 # The basenamefor the breast cancer clinical files
@@ -150,7 +150,7 @@ combineMetadata<- function(table1,table2){
 #load colon and rectum data
 colon<-clinicalDataTable(colonClinical.path, "colon")
 rectum<-clinicalDataTable(rectumClinical.path,"rectum")
-breast<- clinicalDataTable(breastClinical.path,"breast")
+#breast<- clinicalDataTable(breastClinical.path,"breast")
 
 # order the colon columns the same way as they rectum columns
 #colon<-colon[,order(match(colnames(colon),colnames(rectum)))]
@@ -219,7 +219,7 @@ scores<- rbind.data.frame(scores[[1]],scores[[2]])
 #silent mutations
 scores.silent<-scores[which(scores$Variant_Classification=="Silent"),]
 
-scores<-scores[which(scores$Variant_Classification!="Silent"),]
+scores.function<-scores[which(scores$Variant_Classification!="Silent"),]
 
 
 #ScoresTest<-labelCancer(scores,"test")
@@ -229,11 +229,9 @@ scores<-scores[which(scores$Variant_Classification!="Silent"),]
 
 
 
-scoresSamples<- unique(scores$sampleID)# I need to remove the samples containing 0 silent mutations
-scores.silentSamples<- unique(scores.silent$sampleID)
-scores.silent.intersectSamples<-intersect(scoresSamples,scores.silentSamples)
+scores.functionSamples<- unique(scores.function$sampleID)# I need to remove the samples containing 0 silent mutations
+scores.silentSamples<- unique(scores.silent$sampleID)# The samples containing at east 1 silent mutation
 
-intersectSamples<-(intersect(scoresSamples,rownames(colorectal)))
 
 extractIntersectSamples<- function(dataNames,intersectList,data){
   if(class(dataNames)!= "character"||class(intersectList)!="character"){
@@ -245,12 +243,21 @@ extractIntersectSamples<- function(dataNames,intersectList,data){
     }
 }
 
+#This gives me the scores dataframe for the samples containing both silent and non-silent mutations and ignores those that only contain non-silent mutations.
+scores<- extractIntersectSamples(scores$sampleID,scores.silentSamples, scores)
 
-scores1<- extractIntersectSamples(scores$sampleID,)
+#I must redefine scoresSamples because the number of samples in scores changes at line 248.
+intersectSamples<-(intersect(scores.silentSamples,rownames(colorectal)))
 
-
+#This line is here in case there are samples that have sequence information, but no phenotype data
 scores<-extractIntersectSamples(scores$sampleID,intersectSamples,scores)# this produces the same result as in the original code, but much faster
-scores<- scores[order(scores$sampleID),]
+scores<- scores[order(scores$sampleID),]# final ordered scores dataframe...
+
+
+
+
+
+
 
 #the metadata must be a matrix
 metadata2<-extractIntersectSamples(rownames(colorectal), intersectSamples, colorectal)# this produced the same result as in the original code but much faster
@@ -278,8 +285,8 @@ colnames(mutations)<- colnames(scores)
 
 # nonsilent mutations per individual
 mutationsTypePerIndiv<-table(mutations$Variant_Classification, mutations$sampleID)
-mutationsSilentPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[c(3,4,6,7),x]))# the columns chosen change depending on which dataset you use, pre-may 2013 or post may 2013
-names(mutationsSilentPerIndiv)<-colnames(mutationsTypePerIndiv)
+IndelsPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[c(3,4,6,7),x]))# the columns chosen change depending on which dataset you use, pre-may 2013 or post may 2013
+names(IndelsPerIndiv)<-colnames(mutationsTypePerIndiv)
 mutationsSNVPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[c(9,10,12),x]))# number of SNVs per Indiv
 names(mutationsSNVPerIndiv)<-colnames(mutationsTypePerIndiv)
 
@@ -334,7 +341,6 @@ rownames(mutationMatrixLogical)<- rownames(mutationTable)
 colnames(mutationMatrixLogical)<- colnames(mutationTable)
 
 
-#Begin again from here tomorrow. runcreate metadata and then this script
 ######################################################################################################################################
 
 #################################################################################################################################################################################
@@ -407,14 +413,14 @@ geneAdj<-geneAdjIndex
 #Metadata
 
 # variables required for the plot functions
-snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,mutationsSilentPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
+snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,IndelsPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
 
 barplot(mutationsPerIndiv[order(mutationsPerIndiv, decreasing=TRUE)], border="gray")
 
-silentVsNonSilentRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
-#1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
-#2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
-indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
+IndelPercentage<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
+#1  IndelSNVRatio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
+#2 IndelSNVRatio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
+IndelSNVRatio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
 
 
 #function to create the hypermutated metadata variable
@@ -428,6 +434,7 @@ getHypermutated<-function(rawdata,mutTable,mutationMatrix,metadata,ratio){
   silentAndNonSilentMutations <-cbind(table(silentMutations$sampleID), table(mutTable$sampleID))
   silentAndNonSilentMutations<-silentAndNonSilentMutations[order(silentAndNonSilentMutations[,2], decreasing=TRUE),]
   hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(ratio>20),])# I need this because the names are ordered differently in 
+  #hypermutatedSampleNames<-rownames(silentAndNonSilentMutations[which(ratio>20),])# I need this because the names are ordered differently in 
   hyperIndex<-match(hypermutatedSampleNames,colnames(mutationMatrix))
   #hypermutated metadata variable
   hypermutatedMetaData<-rownames(metadata)%in%hypermutatedSampleNames# hypermutated samples are identified in the metadata2 table using this variable
@@ -439,8 +446,10 @@ getHypermutated<-function(rawdata,mutTable,mutationMatrix,metadata,ratio){
 
 
 
-hyperMutatedMetaData<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[2]]
-hyperIndex<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[1]]
+hyperMutatedINDSNVRatio<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,IndelSNVRatio)[[2]]
+hyperMutatedINDPercentage<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,IndelPercentage)[[2]]
+
+hyperIndex<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,IndelPercentage)[[1]]
 ##for 2nd september#############################
 #check that this works tomorrow I'm pretty sure it works because I get good MDS plots
 #
@@ -470,12 +479,12 @@ hyperIndex<-getHypermutated(scores,mutations, mutMatLogicalOrdered, metadata2,si
 
 
 
-#ßhyperMutatedMetaData<-getHypermutated2(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[2]]
+#ßhyperMutatedMetaData<-getHypermutated2(scores,mutations, mutMatLogicalOrdered, metadata2,IndelsSNVRatio)[[2]]
 
-#hyperIndex<-getHypermutated2(scores,mutations, mutMatLogicalOrdered, metadata2,silentVsNonSilentRatio)[[1]]
+#hyperIndex<-getHypermutated2(scores,mutations, mutMatLogicalOrdered, metadata2,IndelsSNVRatio)[[1]]
 
 ###########################
-metadata2<- cbind.data.frame(metadata2, hyperMutatedMetaData)#This needs to be put somewhere else and I need to get the variable typesusing typeof here and store it in a variable for later usage when I need to decide on statistical tests for comparisons between groups based on different metadata variables.
+metadata2<- cbind.data.frame(metadata2, hyperMutatedINDSNVRatio,hyperMutatedINDPercentage)#This needs to be put somewhere else and I need to get the variable typesusing typeof here and store it in a variable for later usage when I need to decide on statistical tests for comparisons between groups based on different metadata variables.
 #The metadata type variable I can use to assign the correct statistical test to contingency tables of the stratification variable based on one of the metadata variables such as hypermutation status.
 metadataType<-sapply(metadata2,typeof)
 
@@ -510,14 +519,14 @@ names(stratification)<- colnames(metadata3)
 ###PLOTTING FUNCTIONS
 ################################################################################################################################
 # variables required for the plot functions
-snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,mutationsSilentPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
+snvIndelBarPlotPoints<- cbind(mutationsPerIndiv,IndelsPerIndiv)[order(mutationsPerIndiv, decreasing =TRUE),]
 
 barplot(mutationsPerIndiv[order(mutationsPerIndiv, decreasing=TRUE)], border="gray")
 
-silentVsNonSilentRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
-#1  indelSNVratio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
-#2 indelSNVratio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
-indelSNVratio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
+#IndelSNVRatio<- sapply(seq(1:length(intersectSamples)), function(x) (snvIndelBarPlotPoints[x,2]/sum(snvIndelBarPlotPoints[x,]))*100)
+#1  IndelSNVRatio<- sapply(seq(1:length(uniqueSamples)), function(x) ((snvIndelBarPlotPoints[x,1]+1)/(snvIndelBarPlotPoints[x,2]+1)))
+#2 IndelSNVRatio<- apply(snvIndelBarPlotPoints+1,1, function(x) x[1]/x[2])
+#IndelSNVRatio<- (snvIndelBarPlotPoints[,2])/(snvIndelBarPlotPoints[,1])
 
 # plot functions
 mutFreqPlot<-function(freqData,indSNVratio, mutsPerIndiv){
@@ -527,7 +536,7 @@ mutFreqPlot<-function(freqData,indSNVratio, mutsPerIndiv){
   par(new=T)
   #testing to see that the ordering of my stratification metadata for coloring plot points is correct.
   #identical(rownames(freqData), rownames(metadata2)[order(mutationsPerIndiv,decreasing=TRUE)])
-  plot(indSNVratio, axes=F, pch=20,col=(stratification$hyperMutatedMetaData[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.8,xlab="",ylab="", cex.axis=1.2) # a plot of the ratio of indels amongst all non-silent mutations
+  plot(indSNVratio, axes=F, pch=20, col=(stratification$hyperMutatedINDPercentage[order(mutationsPerIndiv, decreasing =TRUE),1]),cex=0.8,xlab="",ylab="", cex.axis=1.2) # a plot of the ratio of indels amongst all non-silent mutations
   #plot(indSNVratio, axes=F, pch=20,col=(stratification$vital_status[order(mutationsPerIndiv, decreasing =TRUE),1]), cex=0.8,xlab="",ylab="", cex.axis=1.2) # a plot of the percentage of indels amongst all non-silent mutations
   axis(4, pretty(c(0, max(indSNVratio))), pos= length(indSNVratio)+2)
   mtext("mutation frequency per sample", side=2, line=0, adj=0.5, padj=-3.5, cex=1.2)
@@ -537,7 +546,7 @@ mutFreqPlot<-function(freqData,indSNVratio, mutsPerIndiv){
 }
 # I can further develop the function to produce the plots with SNV;Indel ration points colored according to a metadata variable group membership of my choosing. I just need a variable that is the metadata object with samples ordered according to the mutations perIndiv order of the samples. 
 
-plot1<- mutFreqPlot(snvIndelBarPlotPoints,indelSNVratio,mutationsPerIndiv)
+plot1<- mutFreqPlot(snvIndelBarPlotPoints,IndelPercentage,mutationsPerIndiv)
 
 
 #######################################################################################################################
@@ -612,15 +621,15 @@ for (i in seq(35,length(names(stratification)))){
 }
 
 #setwd("C:/Users/rds/Dropbox/PhD/tumour_classifier_data/analysis/colorectal cancer/combined/MDS/images")
-MDSplot(v,stratification$cancerType, hyperIndex)
+MDSplot(v,stratification$seqTech, hyperIndex)
 
 v.pam<-pam(v$points,2)
-plot(v$points,col=alpha(stratification$hyperMutatedMetaData[,1],0.5),pch=19)
+plot(v$points,col=alpha(stratification$hyperMutatedINDPercentage[,1],0.5),pch=19)
 plot(v$points,col=alpha(v.pam$clustering,0.5),pch=19)
 
 
 u.mds<- isoMDS(u,k=2, max=1000, tol=1e-5)
-plot(u.mds$points,col=alpha(stratification$hyperMutatedMetaData[,1],0.5),pch=19)
+plot(u.mds$points,col=alpha(stratification$hyperMutatedINDPercentage[,1],0.5),pch=19)
 u.mds.pam<-pam(u.mds$points,2)
 plot(u.mds$points,col=alpha(u.mds.pam$clustering,0.5),pch=19)
 library(cluster)
