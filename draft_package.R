@@ -300,22 +300,110 @@ colnames(mutations)<- colnames(scores)
 
 
 
-
+#################### per individual mutation measures ############################################################################################
 # nonsilent mutations per individual
 mutationsTypePerIndiv<-table(mutations$Variant_Classification, mutations$sampleID)
 mutationsClassPerIndiv<-table(mutations$Variant_Type, mutations$sampleID)
 IndelsPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsClassPerIndiv[c(1,3),x]))# the columns chosen change depending on which dataset you use, pre-may 2013 or post may 2013
-
 #IndelsPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[c(3,4,6,7),x]))# the columns chosen change depending on which dataset you use, pre-may 2013 or post may 2013
 names(IndelsPerIndiv)<-colnames(mutationsTypePerIndiv)
 mutationsSNVPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsClassPerIndiv[4,x]))# number of SNVs per Indiv
-
 #mutationsSNVPerIndiv<-sapply(seq(1:length(intersectSamples)), function(x) sum(mutationsTypePerIndiv[c(9,10,12),x]))# number of SNVs per Indiv
 names(mutationsSNVPerIndiv)<-colnames(mutationsTypePerIndiv)
+#################################################################################################################################################
 
-#mutationsPerIndiv <-aggregate(mutations[,1], by=list(mutations$sampleID), length)
-#mutationsPerGene <-aggregate(mutations[,1], by=list(mutations$Hugo_Symbol), length)
-#the functions below are faster
+
+pdf(paste(deparse(substitute(mutationsTypePerIndiv)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+lapply(seq(1:dim(mutationsTypePerIndiv)[1]), function(x) barplot(table(mutationsTypePerIndiv[x,]), col="grey", border="grey", main=paste(rownames(mutationsTypePerIndiv)[x]," frequency"), xlab="number of mutations", ylab="number of samples"))
+dev.off()
+
+pdf(paste(deparse(substitute(mutationsClassPerIndiv)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+lapply(seq(1:dim(mutationsClassPerIndiv)[1]), function(x) barplot(table(mutationsClassPerIndiv[x,]), col="grey", border="grey", main=paste(rownames(mutationsClassPerIndiv)[x]," frequency"), xlab="number of mutations", ylab= "number of samples"))
+dev.off()
+
+pdf(paste(deparse(substitute(IndelsPerIndiv)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+barplot(table(IndelsPerIndiv), col="grey", border="grey", main = "Indels per gene frequency", xlab= "number of mutations", ylab="number of samples")
+dev.off()
+
+pdf(paste(deparse(substitute(mutationsSNVPerIndiv)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+barplot(table(mutationsSNVPerIndiv), col="grey", border="grey", main= "SNVs per gene frequency", xlab="number of mutations", ylab="number of samples")
+dev.off()
+
+
+
+
+
+###### per gene mutation measures###################################################################################################
+mutationsTypePerGene<-table(mutations$Variant_Classification, mutations$Hugo_Symbol)
+mutationsClassPerGene<-table(mutations$Variant_Type, mutations$Hugo_Symbol)
+IndelsPerGene<-sapply(seq(1:dim(mutationsClassPerGene)[2]), function(x) sum(mutationsClassPerGene[c(1,3),x]))# the columns chosen change depending on which dataset you use, pre-may 2013 or post may 2013
+names(IndelsPerGene)<-colnames(mutationsTypePerGene)
+mutationsSNVPerGene<-sapply(seq(1:dim(mutationsClassPerGene)[2]), function(x) sum(mutationsClassPerGene[4,x]))# number of SNVs per Indiv
+names(mutationsSNVPerGene)<-colnames(mutationsTypePerGene)
+#####################################################################################################################################
+
+pdf(paste(deparse(substitute(mutationsTypePerGene)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+lapply(seq(1:dim(mutationsTypePerGene)[1]), function(x) barplot(table(mutationsTypePerGene[x,]), col="grey", border="grey", main=paste(rownames(mutationsTypePerGene)[x]," frequency"), xlab="number of mutations", ylab="number of genes"))
+dev.off()
+
+pdf(paste(deparse(substitute(mutationsClassPerGene)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+lapply(seq(1:dim(mutationsClassPerGene)[1]), function(x) barplot(table(mutationsClassPerGene[x,]), col="grey", border="grey", main=paste(rownames(mutationsClassPerGene)[x]," frequency"), xlab="number of mutations", ylab= "number of genes"))
+dev.off()
+
+pdf(paste(deparse(substitute(IndelsPerGene)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+barplot(table(IndelsPerGene), col="grey", border="grey", main = "Indels per gene frequency", xlab= "number of mutations", ylab="number of genes")
+dev.off()
+
+pdf(paste(deparse(substitute(mutationsSNVPerGene)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+barplot(table(mutationsSNVPerGene), col="grey", border="grey", main= "SNVs per gene frequency", xlab="number of mutations", ylab="number of genes")
+dev.off()
+######################################################################################################################################
+### DESCRIPTIVE STATS TABLES ###################################################################################################
+
+
+
+#descriptive statistics functions
+std <- function(x) sd(x)/sqrt(length(x))# standard error calculator
+my_mode<- function(x) x[which.max(x)]# mode calculator
+
+
+
+
+summaryStats.IndelsPerGene<-c(summary(IndelsPerGene),Mean.stderr= std(IndelsPerGene), Mode=my_mode(IndelsPerGene),Modal.Value=names(my_mode(IndelsPerGene)))
+summaryStats.IndelsPerIndiv<-c(summary(IndelsPerIndiv),Mean.stderr= std(IndelsPerIndiv), Mode=my_mode(IndelsPerIndiv),Modal.Value=names(my_mode(IndelsPerIndiv)))
+summaryStats.mutationsSNVPerGene<-c(summary(mutationsSNVPerGene),Mean.stderr= std(mutationsSNVPerGene), Mode=my_mode(mutationsSNVPerGene),Modal.Value=names(my_mode(mutationsSNVPerGene)))
+summaryStats.mutationsSNVPerIndiv<-c(summary(mutationsSNVPerIndiv),Mean.stderr= std(mutationsSNVPerIndiv), Mode=my_mode(mutationsSNVPerIndiv),Modal.Value=names(my_mode(mutationsSNVPerIndiv)))
+
+
+std(mutationsSNVPerIndiv)
+
+
+summaryStats.mutationsClassPerIndiv <-sapply(seq(1:dim(mutationsClassPerIndiv)[1]), function(x) summary(mutationsClassPerIndiv[x,]))
+summaryStats.mutationsClassPerIndiv<- rbind(summaryStats.mutationsClassPerIndiv,Mean.stderr=sapply(seq(1:dim(mutationsClassPerIndiv)[1]), function(x) std(mutationsClassPerIndiv[x,])), Mode=sapply(seq(1:dim(mutationsClassPerIndiv)[1]), function(x) my_mode(mutationsClassPerIndiv[x,])), Modal.Value=sapply(seq(1:dim(mutationsClassPerIndiv)[1]), function(x) names(my_mode(mutationsClassPerIndiv[x,]))))
+colnames(summaryStats.mutationsClassPerIndiv)<- rownames(mutationsClassPerIndiv)
+
+summaryStats.mutationsTypePerIndiv <-sapply(seq(1:dim(mutationsTypePerIndiv)[1]), function(x) summary(mutationsTypePerIndiv[x,]))
+summaryStats.mutationsTypePerIndiv<- rbind(summaryStats.mutationsTypePerIndiv,Mean.stderr=sapply(seq(1:dim(mutationsTypePerIndiv)[1]), function(x) std(mutationsTypePerIndiv[x,])),Mode=sapply(seq(1:dim(mutationsTypePerIndiv)[1]), function(x) my_mode(mutationsTypePerIndiv[x,])), Modal.Value=sapply(seq(1:dim(mutationsTypePerIndiv)[1]), function(x) names(my_mode(mutationsTypePerIndiv[x,]))))
+colnames(summaryStats.mutationsTypePerIndiv)<- rownames(mutationsTypePerIndiv)
+
+
+
+summaryStats.mutationsClassPerGene <-sapply(seq(1:dim(mutationsClassPerGene)[1]), function(x) summary(mutationsClassPerGene[x,]))
+summaryStats.mutationsClassPerGene<- rbind(summaryStats.mutationsClassPerGene,Mean.stderr=sapply(seq(1:dim(mutationsClassPerGene)[1]), function(x) std(mutationsClassPerGene[x,])), Mode=sapply(seq(1:dim(mutationsClassPerGene)[1]), function(x) my_mode(mutationsClassPerGene[x,])), Modal.Value=sapply(seq(1:dim(mutationsClassPerGene)[1]), function(x) names(my_mode(mutationsClassPerGene[x,]))))
+colnames(summaryStats.mutationsClassPerGene)<- rownames(mutationsClassPerGene)
+
+
+summaryStats.mutationsTypePerGene <-sapply(seq(1:dim(mutationsTypePerGene)[1]), function(x) summary(mutationsTypePerGene[x,]))
+summaryStats.mutationsTypePerGene<- rbind(summaryStats.mutationsTypePerGene,Mean.stderr=sapply(seq(1:dim(mutationsTypePerGene)[1]), function(x) std(mutationsTypePerGene[x,])),Mode=sapply(seq(1:dim(mutationsTypePerGene)[1]), function(x) my_mode(mutationsTypePerGene[x,])), Modal.Value=sapply(seq(1:dim(mutationsTypePerGene)[1]), function(x) names(my_mode(mutationsTypePerGene[x,]))))
+colnames(summaryStats.mutationsTypePerGene)<- rownames(mutationsTypePerGene)
+
+
+summaryStats.SNV.Indel<- as.data.frame.matrix(cbind(IndelsPerGene=summary(IndelsPerGene), IndelsPerIndiv=summary(IndelsPerIndiv), MutationsSNVPerGene=summary(mutationsSNVPerGene), mutationsSNVPerIndiv=summary(mutationsSNVPerIndiv)))
+
+summaries<- list(classPerGene=summaryStats.mutationsClassPerGene, typePerGene=summaryStats.mutationsTypePerGene, classPerIndiv=summaryStats.mutationsClassPerIndiv, typePerIndiv=summaryStats.mutationsTypePerIndiv, IndelsPerGene=summaryStats.IndelsPerGene, mutationsSNVPerGene=summaryStats.mutationsSNVPerGene, IndelsPerIndiv=summaryStats.IndelsPerIndiv, mutationsSNVPerIndiv=summaryStats.mutationsSNVPerIndiv)
+
+
+
 
 
 
@@ -533,13 +621,14 @@ smpclrs<-sampstr(metadata3,"histological_type")# This now has the correct number
 
 
 stratification<-lapply(colnames(metadata3), function(x) sampstr(metadata3,x))# integers representing metadata classes for coloring of samples in the MDS plots
-names(stratification)<- colnames(metadata3)
+names(stratification)<-colnames(metadata3)
 
+stratification.tables<-sapply(seq(1:length(stratification)), function(x) table(stratification[[x]][,2]))
+names(stratification.tables)<- names(stratification)
 
+barplot(stratification.tables$mononucleotide_and_dinucleotide_marker_panel_analysis_status)
 ###########################################################################################################################################
 ##load the network_informed_clusterring_function
-#can I do that using library()?
-
 
 ################################################################################################################################
 ###PLOTTING FUNCTIONS
