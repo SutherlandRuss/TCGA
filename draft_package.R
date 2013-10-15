@@ -8,8 +8,9 @@ library(cluster)
 # load network
 #########################################################################################################################
 
-network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-#network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
 #network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
@@ -19,8 +20,11 @@ network.file  <- paste0(network.name,".simple")
 ##########################################################################################################################
 # The data file in vcf-like format.
 #scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
-scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
+#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
+scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
 #scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
+
+#scores.files<- "pancan12_cleaned.maf"
 
 scores.files<-unlist(list.files(scores.path))
 #scores.files <- "colorectalcancer.maf"
@@ -40,12 +44,13 @@ scores.files<-unlist(list.files(scores.path))
 ###########################################################################################################################
 
 #The basename for the clinical files
-colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/COAD"
-#colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/coloncancer/Clinical_17_12_12/Biotab/"
+#colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/COAD"
+colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/COAD"
 #colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/colon/Clinical/Biotab/"
 
 #The basename for the rectal clinical files
-rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/READ"
+#rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/READ"
+rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/READ"
 #rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 #rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/rectum/Clinical/Biotab"
 
@@ -174,7 +179,7 @@ dataFiles<-file.path(scores.path,scores.files)
 
 #The function to read the data in to the scores table
 createScoreTable<- function(dataFile){
-  scores<- read.table(dataFile , header=TRUE, sep = "\t", quote = "", stringsAsFactors = FALSE)
+  scores<- read.table(dataFiles , header=TRUE, sep = "\t", quote = "", stringsAsFactors = FALSE)
   scores<- unique(scores)
   #Splitting the TCGA barcode in to the minimum  number of fields to uniquely identify individuals
   samples<- strsplit(scores$Tumor_Sample_Barcode, split = "-", fixed = TRUE)
@@ -340,6 +345,21 @@ IndelsPerGene<-sapply(seq(1:dim(mutationsClassPerGene)[2]), function(x) sum(muta
 names(IndelsPerGene)<-colnames(mutationsTypePerGene)
 mutationsSNVPerGene<-sapply(seq(1:dim(mutationsClassPerGene)[2]), function(x) sum(mutationsClassPerGene[4,x]))# number of SNVs per Indiv
 names(mutationsSNVPerGene)<-colnames(mutationsTypePerGene)
+
+##write to file
+
+
+setwd("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/analysis/Pan_cancer12/coadRead/Descriptive_analysis")
+
+outputTables<-list(mutationsTypePerGene=mutationsTypePerGene,mutationsClassPerGene=mutationsClassPerGene,IndelsPerGene=IndelsPerGene,mutationsSNVPerGene=mutationsSNVPerGene)
+
+# I am tryong to write my table to output files so they can be opened in Excel.
+#lapply(seq(1:length(outputTables)), function(x) write.table(outputTables[x],paste(as.character(names(outputTables[x])),".txt"), append=FALSE, sep="\t", eol="\n", na="NA"))
+
+           
+#write.table(outputTables[[1]],paste(as.character(names(outputTables[1])),".txt"), append=FALSE, sep="\t", eol="\n", na="NA")
+
+
 #####################################################################################################################################
 
 pdf(paste(deparse(substitute(mutationsTypePerGene)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
@@ -403,6 +423,8 @@ summaryStats.SNV.Indel<- as.data.frame.matrix(cbind(IndelsPerGene=summary(Indels
 summaries<- list(classPerGene=summaryStats.mutationsClassPerGene, typePerGene=summaryStats.mutationsTypePerGene, classPerIndiv=summaryStats.mutationsClassPerIndiv, typePerIndiv=summaryStats.mutationsTypePerIndiv, IndelsPerGene=summaryStats.IndelsPerGene, mutationsSNVPerGene=summaryStats.mutationsSNVPerGene, IndelsPerIndiv=summaryStats.IndelsPerIndiv, mutationsSNVPerIndiv=summaryStats.mutationsSNVPerIndiv)
 
 
+setwd("C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/analysis/Pan_cancer12/coadRead/Descriptive_analysis")
+write.table(summaries,"descriptive_stats.txt", append=TRUE, sep="\t", eol="\n", na="NA")
 
 
 
@@ -626,7 +648,12 @@ names(stratification)<-colnames(metadata3)
 stratification.tables<-sapply(seq(1:length(stratification)), function(x) table(stratification[[x]][,2]))
 names(stratification.tables)<- names(stratification)
 
-barplot(stratification.tables$mononucleotide_and_dinucleotide_marker_panel_analysis_status)
+#age at diagnosis calculated from days to birth/365
+age.atdiagnosis<-table(floor(stratification$days_to_birth[,2]/365))
+
+pdf(paste(deparse(substitute(stratification.tables$mononucleotide_and_dinucleotide_marker_panel_analysis_status)),"frequency.pdf"), width=7, height=7, onefile=TRUE, paper="a4r")
+barplot(stratification.tables$tumor_stage, main= " tumour stage frequency", xlab=" patient groups", ylab=" number of samples")
+dev.off()
 ###########################################################################################################################################
 ##load the network_informed_clusterring_function
 
