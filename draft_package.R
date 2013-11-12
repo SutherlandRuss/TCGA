@@ -9,8 +9,8 @@ library(cluster)
 #########################################################################################################################
 
 #network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-#network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
-network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
+network.path  <- "C:/Users/rds/Dropbox/PhD/PINA/"
+#network.path  <- "C:/Users/rsutherland/Dropbox/PhD/PINA/"
 #network.path  <- "/Users/Russ/Dropbox/PhD/PINA/"
 
 network.name  <- "pina101212_min2_noUBC"
@@ -20,8 +20,8 @@ network.file  <- paste0(network.name,".simple")
 ##########################################################################################################################
 # The data file in vcf-like format.
 #scores.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
-#scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
-scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
+scores.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
+#scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/sep_2013/input"
 #scores.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/colorectal_somatic_mutations/combined"
 
 #scores.files<- "pancan12_cleaned.maf"
@@ -44,13 +44,13 @@ scores.files<-unlist(list.files(scores.path))
 ###########################################################################################################################
 
 #The basename for the clinical files
-#colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/COAD"
-colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/COAD"
+colonClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/COAD"
+#colonClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/COAD"
 #colonClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/colon/Clinical/Biotab/"
 
 #The basename for the rectal clinical files
-#rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/READ"
-rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/READ"
+rectumClinical.path <- "C:/Users/rds/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/READ"
+#rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/SynapsePanCancer/PanCan12/READ"
 #rectumClinical.path <- "C:/Users/rsutherland/Dropbox/PhD/tumour_classifier_data/rectum_adenocarcinoma/Clinical_18_02_2013/Biotab/"
 #rectumClinical.path <- "/Users/Russ/Dropbox/PhD/tumour_classifier_data/sep_2013/rectum/Clinical/Biotab"
 
@@ -165,8 +165,8 @@ rectum<-clinicalDataTable(rectumClinical.path,"rectum")
 #combine the colon and rectum metadata tables
 colorectal<- combineMetadata(colon,rectum)
 
-colorectalBreast<-combineMetadata(colorectal,breast)
-colorectal<-colorectalBreast
+#colorectalBreast<-combineMetadata(colorectal,breast)
+#colorectal<-colorectalBreast
 
 #colorectal<-as.data.frame(colorectal) I don't need this to be a datframe 
 
@@ -302,6 +302,8 @@ getFuncMutations<-function(scoresT){
 # The matrix of "non-silent mutations"
 mutations<-scores[which(scores$Variant_Classification!="Silent"),]
 colnames(mutations)<- colnames(scores)
+#matrix of all mutations
+silentMutationsPerGene<-table(scores.silent$Variant_Classification, scores.silent$Hugo_Symbol)
 
 
 
@@ -453,7 +455,7 @@ seqTech<- seqTech[order(seqTech[,2], decreasing = FALSE),]
 cancerType<-unique(cbind(mutations$cancer_type,as.character(mutations$sampleID)))
 cancerType<- cancerType[order(cancerType[,2], decreasing = FALSE),]
 
-metadata2<-cbind.data.frame(metadata2, cancerType=cancerType[,1], seqTech=seqTech[,1], sequenceCenter=sequenceCenter[,1], stringsAsFactors=FALSE)# adds the cancerType and seqTech metadata to the metadata object
+metadata2<- cbind.data.frame(metadata2, cancerType=cancerType[,1], seqTech=seqTech[,1], sequenceCenter=sequenceCenter[,1], stringsAsFactors=FALSE)# adds the cancerType and seqTech metadata to the metadata object
 
 
 
