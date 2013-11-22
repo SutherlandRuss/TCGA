@@ -749,10 +749,10 @@ v<-cmdscale(u,k=2, eig=TRUE)
 MDSplot<- function(mdsPoints,smplclrs,hyperMutIndex){
   par(mar=c(5,5,5,25))
   par(xpd=TRUE)
-  plot(mdsPoints$points[,1],mdsPoints$points[,2], pch = 19, col=alpha(smplclrs[,1],0.5), cex=1.2, cex.lab= 1.5, cex.main = 1.5, cex.axis=1.5, xlab="dimension 1", ylab="dimension 2", main ="mds plot of colorectal cancer samples \n before network processing of mutation matrix")
-  points(mdsPoints$points[hyperIndex,1], mdsPoints$points[hyperIndex,2],pch=1, cex = 2.0)
+  plot(mdsPoints$points[,1],mdsPoints$points[,2], pch = 19, col=alpha(smplclrs[,1],0.5), cex=3, cex.lab= 1.5, cex.main = 1.5, cex.axis=1.5, xlab="dimension 1", ylab="dimension 2", main ="mds plot of colorectal cancer samples \n before network processing of mutation matrix")
+  points(mdsPoints$points[hyperIndex,1], mdsPoints$points[hyperIndex,2],pch=1, cex = 5.0)
   #legend(0.5, 0.11, c("Illumina", "Solid","hypermutated"), cex=1., pch=c(19,19,1),col=c("red","blue","black"))
-  legend(max(v$points[,1])+0.05, max(v$points[,2]),bty="n", c(unique(smplclrs[,2]),"hypermutated"), cex=1.5,pt.cex=1.2, pch=c(rep(19, length(unique(smplclrs[,2]))),1),col=c(seq_along(1:length(unique(smplclrs[,1]))),1))
+  legend(max(v$points[,1])+0.05, max(v$points[,2]),bty="n", c(unique(smplclrs[,2]),"hypermutated"), cex=3,pt.cex=1.2, pch=c(rep(19, length(unique(smplclrs[,2]))),1),col=c(seq_along(1:length(unique(smplclrs[,1]))),1))
 }
 
 for (i in seq(1,length(names(stratification)))){
